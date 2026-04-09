@@ -70,7 +70,7 @@ spec:
 
         # Technitium webhook provider — translates ExternalDNS calls to Technitium API
         - name: technitium-webhook
-          image: ghcr.io/roosmaa/external-dns-technitium-webhook
+          image: ghcr.io/roosmaa/external-dns-technitium-webhook:main
           env:
             - name: TECHNITIUM_URL
               value: "http://192.168.140.102:5380"
