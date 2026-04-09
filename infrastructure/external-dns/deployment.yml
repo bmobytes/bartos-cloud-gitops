@@ -59,7 +59,7 @@ spec:
             - --policy=sync
             - --log-level=info
             - --interval=1m
-            - --webhook-provider-url=http://localhost:8888
+            - --webhook-provider-url=http://localhost:3000
           resources:
             requests:
               cpu: 50m
@@ -70,23 +70,26 @@ spec:
 
         # Technitium webhook provider — translates ExternalDNS calls to Technitium API
         - name: technitium-webhook
-          image: ghcr.io/mconfalonieri/external-dns-technitium-webhook:latest
+          image: ghcr.io/roosmaa/external-dns-technitium-webhook
           env:
             - name: TECHNITIUM_URL
               value: "http://192.168.140.102:5380"
-            - name: TECHNITIUM_API_TOKEN
+            - name: TECHNITIUM_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: technitium-credentials
-                  key: api-token
-            - name: SERVER_HOST
-              value: "0.0.0.0"
-            - name: SERVER_PORT
-              value: "8888"
-            - name: DOMAIN_FILTER
+                  key: username
+            - name: TECHNITIUM_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: technitium-credentials
+                  key: password
+            - name: ZONE
+              value: "bartos.media"
+            - name: DOMAIN_FILTERS
               value: "bartos.media"
           ports:
-            - containerPort: 8888
+            - containerPort: 3000
           resources:
             requests:
               cpu: 50m
