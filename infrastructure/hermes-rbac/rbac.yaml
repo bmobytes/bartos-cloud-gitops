@@ -1,0 +1,100 @@
+---
+# =============================================================
+# Hermes Agent - Namespace & RBAC
+# Gives Hermes full admin over all namespace-scoped resources
+# plus the ability to create and manage namespaces.
+#
+# What Hermes CAN do:
+#   - Create, update, delete namespaces
+#   - Full admin within any namespace (deployments, services,
+#     ingresses, PVCs, configmaps, secrets, RBAC, etc.)
+#   - Read storage classes and ingress classes (to make decisions)
+#
+# What Hermes CANNOT do:
+#   - Touch nodes or cluster configuration
+#   - Modify storage classes or ingress classes
+#   - Access kube-system, argocd, longhorn-system, or other
+#     infrastructure namespaces (unless it created them)
+# =============================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hermes
+---
+# Custom ClusterRole for cluster-scoped operations
+# The built-in `admin` role only covers namespace-scoped resources
+# so we need this for namespace management and read-only cluster views
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hermes-cluster-role
+rules:
+  # Namespace lifecycle — core capability for Option B
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # Read-only access to cluster resources Hermes needs to make decisions
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingressclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes", "nodes"]
+    verbs: ["get", "list", "watch"]
+
+  # Metrics (for resource-aware scheduling decisions)
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["nodes", "pods"]
+    verbs: ["get", "list"]
+---
+# Bind the built-in `admin` ClusterRole at cluster scope
+# This grants Hermes full admin of namespace-scoped resources
+# in ALL namespaces without giving cluster-level write access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hermes-namespace-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+  - kind: ServiceAccount
+    name: hermes
+    namespace: hermes
+---
+# Bind the custom role for cluster-scoped operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hermes-cluster-ops
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hermes-cluster-role
+subjects:
+  - kind: ServiceAccount
+    name: hermes
+    namespace: hermes
+---
+# Long-lived token for the Hermes ServiceAccount
+# k8s 1.24+ doesn't auto-create SA tokens — this Secret does it explicitly
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hermes-token
+  namespace: hermes
+  annotations:
+    kubernetes.io/service-account.name: hermes
+type: kubernetes.io/service-account-token
+---
+# ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hermes
+  namespace: hermes
