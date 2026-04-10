@@ -1,0 +1,178 @@
+## Firecrawl — local deployment values for bartos-cloud
+## Secrets are NOT stored here. See NOTES.md for required manual secrets.
+
+# ---------------------------------------------------------------------------
+# Images
+# ---------------------------------------------------------------------------
+image:
+  repository: ghcr.io/firecrawl/firecrawl
+  tag: latest
+  pullPolicy: IfNotPresent
+
+playwrightImage:
+  repository: ghcr.io/firecrawl/playwright-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+redisImage:
+  repository: redis
+  tag: alpine
+  pullPolicy: IfNotPresent
+
+rabbitmqImage:
+  repository: rabbitmq
+  tag: 3-management
+  pullPolicy: IfNotPresent
+
+nuqPostgresImage:
+  repository: ghcr.io/firecrawl/nuq-postgres
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# ---------------------------------------------------------------------------
+# Existing secrets (must be created out-of-band — see NOTES.md)
+# ---------------------------------------------------------------------------
+existingSecret:
+  # Kubernetes Secret holding API keys and tokens
+  name: firecrawl-secrets
+  # Expected keys: OPENAI_API_KEY, BULL_AUTH_KEY, TEST_API_KEY,
+  #                REDIS_PASSWORD (if redis auth enabled),
+  #                any other sensitive env vars
+
+nuqPostgres:
+  enabled: true
+  existingSecret:
+    # Kubernetes Secret holding NUQ Postgres credentials
+    name: firecrawl-db
+    # Expected keys: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB,
+    #                NUQ_DATABASE_URL, NUQ_DATABASE_URL_LISTEN
+  replicaCount: 1
+  persistence:
+    enabled: true
+    storageClass: longhorn
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+# ---------------------------------------------------------------------------
+# Component toggles and sizing
+# ---------------------------------------------------------------------------
+api:
+  replicaCount: 1
+  port: 3002
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+
+worker:
+  replicaCount: 1
+  port: 3005
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+
+playwright:
+  replicaCount: 1
+  port: 3000
+  maxConcurrentPages: "5"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+redis:
+  replicaCount: 1
+  port: 6379
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 250m
+      memory: 512Mi
+
+rabbitmq:
+  replicaCount: 1
+  port: 5672
+  managementPort: 15672
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Optional components — disabled by default for minimal footprint
+extractWorker:
+  enabled: false
+  replicaCount: 1
+  port: 3004
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+
+nuqWorker:
+  enabled: false
+  replicaCount: 1
+  port: 3006
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+
+# ---------------------------------------------------------------------------
+# ConfigMap values (non-secret environment)
+# ---------------------------------------------------------------------------
+config:
+  numWorkersPerQueue: "1"
+  # Internal service URLs — auto-resolved from service names
+  redisUrl: "redis://firecrawl-redis:6379"
+  rabbitmqUrl: "amqp://firecrawl-rabbitmq:5672"
+  playwrightMicroserviceUrl: "http://firecrawl-playwright:3000/scrape"
+  host: "0.0.0.0"
+  port: "3002"
+  workerPort: "3005"
+  # Kubernetes / self-hosted defaults
+  useDbAuthentication: "false"
+  isKubernetes: "true"
+  env: "production"
+  loggingLevel: "INFO"
+  # DB URLs are injected from the existing secret, not here
+  # Extra env vars to add to the configmap (non-secret only)
+  extra: {}
+
+# ---------------------------------------------------------------------------
+# Ingress
+# ---------------------------------------------------------------------------
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: lab-ca
+  host: firecrawl.lab.bartos.media
+  tls:
+    secretName: firecrawl-tls

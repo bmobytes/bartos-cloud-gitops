@@ -1,0 +1,74 @@
+{{- if .Values.nuqPostgres.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firecrawl-nuq-postgres
+  labels:
+    {{- include "firecrawl.labels" . | nindent 4 }}
+    app.kubernetes.io/name: firecrawl-nuq-postgres
+    app.kubernetes.io/component: nuq-postgres
+spec:
+  replicas: {{ .Values.nuqPostgres.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: firecrawl-nuq-postgres
+      app.kubernetes.io/part-of: firecrawl
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: firecrawl-nuq-postgres
+        app.kubernetes.io/component: nuq-postgres
+        {{- include "firecrawl.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: postgres
+          image: "{{ .Values.nuqPostgresImage.repository }}:{{ .Values.nuqPostgresImage.tag }}"
+          imagePullPolicy: {{ .Values.nuqPostgresImage.pullPolicy }}
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "firecrawl.pgSecretName" . }}
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "firecrawl.pgSecretName" . }}
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "firecrawl.pgSecretName" . }}
+                  key: POSTGRES_DB
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          {{- if .Values.nuqPostgres.persistence.enabled }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          {{- end }}
+          readinessProbe:
+            tcpSocket:
+              port: postgres
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: postgres
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.nuqPostgres.resources | nindent 12 }}
+      {{- if .Values.nuqPostgres.persistence.enabled }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: firecrawl-nuq-postgres-data
+      {{- end }}
+{{- end }}

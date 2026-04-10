@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firecrawl-playwright
+  labels:
+    {{- include "firecrawl.labels" . | nindent 4 }}
+    app.kubernetes.io/name: firecrawl-playwright
+    app.kubernetes.io/component: playwright
+spec:
+  replicas: {{ .Values.playwright.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: firecrawl-playwright
+      app.kubernetes.io/part-of: firecrawl
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: firecrawl-playwright
+        app.kubernetes.io/component: playwright
+        {{- include "firecrawl.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: playwright
+          image: "{{ .Values.playwrightImage.repository }}:{{ .Values.playwrightImage.tag }}"
+          imagePullPolicy: {{ .Values.playwrightImage.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.playwright.port }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: firecrawl-playwright-config
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.playwright.resources | nindent 12 }}

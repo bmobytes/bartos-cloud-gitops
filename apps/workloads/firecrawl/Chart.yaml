@@ -1,0 +1,6 @@
+apiVersion: v2
+name: firecrawl
+description: Firecrawl web scraping API - vendored from upstream firecrawl-helm
+type: application
+version: 0.1.0
+appVersion: "latest"

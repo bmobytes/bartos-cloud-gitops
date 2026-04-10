@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firecrawl-rabbitmq
+  labels:
+    {{- include "firecrawl.labels" . | nindent 4 }}
+    app.kubernetes.io/name: firecrawl-rabbitmq
+    app.kubernetes.io/component: rabbitmq
+spec:
+  replicas: {{ .Values.rabbitmq.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: firecrawl-rabbitmq
+      app.kubernetes.io/part-of: firecrawl
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: firecrawl-rabbitmq
+        app.kubernetes.io/component: rabbitmq
+        {{- include "firecrawl.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: rabbitmq
+          image: "{{ .Values.rabbitmqImage.repository }}:{{ .Values.rabbitmqImage.tag }}"
+          imagePullPolicy: {{ .Values.rabbitmqImage.pullPolicy }}
+          ports:
+            - name: amqp
+              containerPort: {{ .Values.rabbitmq.port }}
+              protocol: TCP
+            - name: management
+              containerPort: {{ .Values.rabbitmq.managementPort }}
+              protocol: TCP
+          readinessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "-q", "check_running"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "-q", "check_running"]
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+          resources:
+            {{- toYaml .Values.rabbitmq.resources | nindent 12 }}

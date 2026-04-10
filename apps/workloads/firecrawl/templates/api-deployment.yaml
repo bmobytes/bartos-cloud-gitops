@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firecrawl-api
+  labels:
+    {{- include "firecrawl.labels" . | nindent 4 }}
+    app.kubernetes.io/name: firecrawl-api
+    app.kubernetes.io/component: api
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: firecrawl-api
+      app.kubernetes.io/part-of: firecrawl
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: firecrawl-api
+        app.kubernetes.io/component: api
+        {{- include "firecrawl.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["node", "--max-old-space-size=2048", "dist/src/index.js"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.port }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: firecrawl-config
+          env:
+            - name: BULL_AUTH_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "firecrawl.secretName" . }}
+                  key: BULL_AUTH_KEY
+                  optional: true
+            - name: TEST_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "firecrawl.secretName" . }}
+                  key: TEST_API_KEY
+                  optional: true
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "firecrawl.secretName" . }}
+                  key: OPENAI_API_KEY
+                  optional: true
+            {{- if .Values.nuqPostgres.enabled }}
+            - name: NUQ_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "firecrawl.pgSecretName" . }}
+                  key: NUQ_DATABASE_URL
+                  optional: true
+            - name: NUQ_DATABASE_URL_LISTEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "firecrawl.pgSecretName" . }}
+                  key: NUQ_DATABASE_URL_LISTEN
+                  optional: true
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}

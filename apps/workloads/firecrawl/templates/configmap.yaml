@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: firecrawl-config
+  labels:
+    {{- include "firecrawl.labels" . | nindent 4 }}
+data:
+  NUM_WORKERS_PER_QUEUE: {{ .Values.config.numWorkersPerQueue | quote }}
+  REDIS_URL: {{ .Values.config.redisUrl | quote }}
+  REDIS_RATE_LIMIT_URL: {{ .Values.config.redisUrl | quote }}
+  NUQ_RABBITMQ_URL: {{ .Values.config.rabbitmqUrl | quote }}
+  PLAYWRIGHT_MICROSERVICE_URL: {{ .Values.config.playwrightMicroserviceUrl | quote }}
+  HOST: {{ .Values.config.host | quote }}
+  PORT: {{ .Values.config.port | quote }}
+  WORKER_PORT: {{ .Values.config.workerPort | quote }}
+  USE_DB_AUTHENTICATION: {{ .Values.config.useDbAuthentication | quote }}
+  IS_KUBERNETES: {{ .Values.config.isKubernetes | quote }}
+  ENV: {{ .Values.config.env | quote }}
+  LOGGING_LEVEL: {{ .Values.config.loggingLevel | quote }}
+  SELF_HOSTED_WEBHOOK_ENABLED: "true"
+  {{- range $k, $v := .Values.config.extra }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}

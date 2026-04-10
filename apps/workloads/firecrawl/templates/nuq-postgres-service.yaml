@@ -1,0 +1,19 @@
+{{- if .Values.nuqPostgres.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: firecrawl-nuq-postgres
+  labels:
+    {{- include "firecrawl.labels" . | nindent 4 }}
+    app.kubernetes.io/name: firecrawl-nuq-postgres
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: firecrawl-nuq-postgres
+    app.kubernetes.io/part-of: firecrawl
+  ports:
+    - port: 5432
+      targetPort: postgres
+      protocol: TCP
+      name: postgres
+{{- end }}

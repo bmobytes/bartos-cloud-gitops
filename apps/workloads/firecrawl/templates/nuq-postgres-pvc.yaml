@@ -1,0 +1,16 @@
+{{- if and .Values.nuqPostgres.enabled .Values.nuqPostgres.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: firecrawl-nuq-postgres-data
+  labels:
+    {{- include "firecrawl.labels" . | nindent 4 }}
+    app.kubernetes.io/name: firecrawl-nuq-postgres
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.nuqPostgres.persistence.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.nuqPostgres.persistence.size }}
+{{- end }}

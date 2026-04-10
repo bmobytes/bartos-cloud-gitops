@@ -12,3 +12,4 @@ resources:
   - honcho-secrets-application.yaml
   - honcho-application.yaml
   - honcho-ui-application.yaml
+  - firecrawl-application.yaml
