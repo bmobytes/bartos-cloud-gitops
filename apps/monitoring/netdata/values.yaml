@@ -19,8 +19,15 @@ parent:
         name: netdata-cloud-claim
 
 ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: lab-ca
   hosts:
     - netdata.lab.bartos.media
+  tls:
+    - hosts:
+        - netdata.lab.bartos.media
+      secretName: netdata-tls
 
 k8sState:
   enabled: true

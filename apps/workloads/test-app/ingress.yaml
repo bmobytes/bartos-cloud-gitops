@@ -3,8 +3,14 @@ kind: Ingress
 metadata:
   name: test-app
   namespace: test-app
+  annotations:
+    cert-manager.io/cluster-issuer: lab-ca
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - test-app.lab.bartos.media
+      secretName: test-app-tls
   rules:
     - host: test-app.lab.bartos.media
       http:

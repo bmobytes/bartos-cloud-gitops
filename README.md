@@ -11,6 +11,8 @@ GitOps repo for the `bartos-cloud` Kubernetes cluster.
 
 ## Current apps
 
+- `cert-manager` — TLS certificate controller (Helm)
+- `cert-manager-issuers` — internal CA bootstrap (`lab-ca` ClusterIssuer)
 - `external-dns`
 - `hermes-rbac`
 - `test-app`
@@ -38,7 +40,16 @@ Render manifests locally with:
 kubectl kustomize clusters/bartos-cloud
 kubectl kustomize apps/infrastructure/external-dns
 kubectl kustomize apps/infrastructure/hermes-rbac
+kubectl kustomize apps/infrastructure/cert-manager-issuers
 kubectl kustomize apps/workloads/test-app
+
+# cert-manager uses an upstream Helm chart with values stored in this repo.
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm template cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --set installCRDs=true \
+  -f apps/infrastructure/cert-manager/values.yaml
 
 # Netdata uses an upstream Helm chart with values stored in this repo.
 helm repo add netdata https://netdata.github.io/helmchart
