@@ -47,19 +47,13 @@ spec:
             - name: data
               mountPath: /var/lib/postgresql/data
           readinessProbe:
-            exec:
-              command:
-                - pg_isready
-                - -U
-                - postgres
+            tcpSocket:
+              port: 5432
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
-            exec:
-              command:
-                - pg_isready
-                - -U
-                - postgres
+            tcpSocket:
+              port: 5432
             initialDelaySeconds: 30
             periodSeconds: 10
       volumes:
