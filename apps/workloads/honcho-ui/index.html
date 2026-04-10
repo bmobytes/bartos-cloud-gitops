@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Honcho Explorer</title>
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --bg2: #161618;
+    --bg3: #1c1c1f;
+    --bg4: #242428;
+    --border: #2e2e33;
+    --border2: #3a3a40;
+    --text: #e8e8ea;
+    --text2: #9898a6;
+    --text3: #5c5c6b;
+    --accent: #7c6af7;
+    --accent2: #5a4fd4;
+    --accent-soft: rgba(124,106,247,0.12);
+    --accent-border: rgba(124,106,247,0.3);
+    --green: #3ecf8e;
+    --green-soft: rgba(62,207,142,0.1);
+    --red: #e5484d;
+    --red-soft: rgba(229,72,77,0.1);
+    --amber: #f1a10d;
+    --amber-soft: rgba(241,161,13,0.1);
+    --radius: 8px;
+    --radius-lg: 12px;
+    --font: 'Berkeley Mono', 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    --font-ui: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: var(--accent); text-decoration: none; }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    height: 52px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .topbar-sep { color: var(--border2); font-size: 18px; margin: 0 2px; }
+  .conn-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 700px;
+  }
+  .conn-form input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 6px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .conn-form input:focus { border-color: var(--accent-border); }
+  .conn-form input[placeholder*="URL"] { width: 200px; }
+  .conn-form input[placeholder*="key"] { width: 180px; }
+  .conn-form input[placeholder*="workspace"] { width: 160px; }
+  .btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 6px 14px;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--accent2); }
+  .btn:active { transform: scale(0.97); }
+  .btn-sm {
+    padding: 4px 10px;
+    font-size: 12px;
+    background: var(--bg4);
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+  .btn-sm:hover { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--bg3); color: var(--text); }
+  .btn-danger { background: var(--red); }
+  .btn-danger:hover { background: #c73c40; }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--text3);
+    flex-shrink: 0;
+  }
+  .status-dot.connected { background: var(--green); }
+  .status-dot.error { background: var(--red); }
+  .status-text { font-size: 12px; color: var(--text3); }
+
+  /* LAYOUT */
+  .layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    height: calc(100vh - 52px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-section {
+    padding: 12px 12px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+  .nav-list { flex: 1; overflow-y: auto; padding: 4px 8px 12px; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13px;
+    transition: background 0.1s, color 0.1s;
+    position: relative;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--accent-soft); color: var(--accent); }
+  .nav-item .nav-icon { font-size: 14px; width: 16px; text-align: center; flex-shrink: 0; }
+  .nav-item .nav-count {
+    margin-left: auto;
+    font-size: 10px;
+    background: var(--bg4);
+    color: var(--text3);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-family: var(--font);
+  }
+  .nav-item.active .nav-count { background: var(--accent-soft); color: var(--accent); }
+  .sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--font);
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .view { display: none; flex-direction: column; flex: 1; }
+  .view.active { display: flex; }
+
+  /* PAGE HEADER */
+  .page-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .page-title { font-size: 18px; font-weight: 600; color: var(--text); }
+  .page-sub { font-size: 13px; color: var(--text3); font-family: var(--font); }
+  .page-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  /* CONTENT AREA */
+  .content { padding: 20px 24px; flex: 1; }
+
+  /* CARDS & TABLES */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .card-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg3);
+  }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .card-body { padding: 16px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text2);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); cursor: pointer; }
+  .mono { font-family: var(--font); font-size: 12px; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font);
+    letter-spacing: 0.02em;
+  }
+  .badge-green { background: var(--green-soft); color: var(--green); }
+  .badge-amber { background: var(--amber-soft); color: var(--amber); }
+  .badge-red { background: var(--red-soft); color: var(--red); }
+  .badge-purple { background: var(--accent-soft); color: var(--accent); }
+  .badge-gray { background: var(--bg4); color: var(--text3); }
+
+  /* EMPTY STATE */
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    color: var(--text3);
+    gap: 8px;
+    text-align: center;
+  }
+  .empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.4; }
+  .empty-title { font-size: 15px; color: var(--text2); font-weight: 500; }
+  .empty-sub { font-size: 13px; }
+
+  /* LOADING */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: var(--text3);
+    gap: 10px;
+    font-family: var(--font);
+    font-size: 13px;
+  }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* DETAIL PANEL */
+  .detail-panel {
+    background: var(--bg2);
+    border-left: 1px solid var(--border);
+    width: 420px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .detail-panel.hidden { display: none; }
+  .panel-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg3);
+    flex-shrink: 0;
+  }
+  .panel-title { font-size: 14px; font-weight: 600; flex: 1; }
+  .panel-close {
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .panel-close:hover { background: var(--bg4); color: var(--text); }
+  .panel-body { overflow-y: auto; flex: 1; padding: 16px; }
+  .field { margin-bottom: 14px; }
+  .field-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 4px;
+  }
+  .field-value {
+    font-family: var(--font);
+    font-size: 12px;
+    color: var(--text);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    word-break: break-all;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .field-value.large { max-height: 400px; }
+  .message-bubble {
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+  }
+  .message-bubble.user { border-left: 3px solid var(--accent); }
+  .message-bubble.ai { border-left: 3px solid var(--green); }
+  .msg-meta { font-size: 10px; color: var(--text3); font-family: var(--font); margin-bottom: 4px; }
+
+  /* PEER CARD SPECIFIC */
+  .peer-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--accent);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stat-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+  }
+  .stat-num { font-size: 20px; font-weight: 600; color: var(--text); font-family: var(--font); }
+  .stat-label { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* SEARCH BAR */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+  }
+  .search-bar input {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    outline: none;
+    flex: 1;
+  }
+  .search-bar input::placeholder { color: var(--text3); }
+
+  /* TOAST */
+  .toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    animation: slideIn 0.2s ease;
+    max-width: 320px;
+  }
+  .toast.success { background: var(--green-soft); border-color: rgba(62,207,142,0.3); color: var(--green); }
+  .toast.error { background: var(--red-soft); border-color: rgba(229,72,77,0.3); color: var(--red); }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-lg);
+    width: 500px;
+    max-width: 95vw;
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-body { padding: 20px; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 6px; display: block; }
+  .form-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus { border-color: var(--accent-border); }
+  textarea.form-input { resize: vertical; min-height: 80px; font-family: var(--font); }
+
+  /* BREADCRUMB */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text3);
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    flex-shrink: 0;
+  }
+  .breadcrumb span { cursor: pointer; color: var(--text2); }
+  .breadcrumb span:hover { color: var(--accent); }
+  .breadcrumb .sep { color: var(--border2); }
+  .breadcrumb .current { color: var(--text); cursor: default; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 2px; padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+  .tab {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--text2); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* COLLECTIONS / DOCS */
+  .doc-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .doc-item:hover { border-color: var(--border2); background: var(--bg4); }
+  .doc-item.selected { border-color: var(--accent-border); background: var(--accent-soft); }
+  .doc-content { font-family: var(--font); font-size: 12px; color: var(--text2); line-height: 1.5; margin-top: 4px; white-space: pre-wrap; word-break: break-word; max-height: 80px; overflow: hidden; position: relative; }
+  .doc-content::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 24px; background: linear-gradient(transparent, var(--bg3)); }
+
+  /* OVERVIEW STATS */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .overview-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .overview-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .overview-num { font-size: 26px; font-weight: 700; color: var(--text); font-family: var(--font); line-height: 1; }
+  .overview-label { font-size: 12px; color: var(--text3); margin-top: 3px; }
+  .pagination { display: flex; align-items: center; gap: 8px; padding: 12px 0 4px; font-size: 13px; color: var(--text3); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .sidebar { width: 52px; }
+    .sidebar-section, .nav-item .nav-count, .nav-item span:not(.nav-icon), .sidebar-footer { display: none; }
+    .nav-item { justify-content: center; padding: 8px; }
+    .detail-panel { width: 320px; }
+    .conn-form input[placeholder*="URL"] { width: 140px; }
+    .conn-form input[placeholder*="key"] { width: 120px; }
+    .conn-form input[placeholder*="workspace"] { width: 110px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><div class="logo-dot"></div>honcho explorer</div>
+  <span class="topbar-sep">|</span>
+  <div class="conn-form">
+    <input type="text" id="baseUrl" placeholder="Base URL" value="http://localhost:8000" />
+    <input type="text" id="apiKey" placeholder="API key (optional)" />
+    <input type="text" id="workspaceId" placeholder="Workspace ID" value="openclaw" />
+    <button class="btn" onclick="connect()">Connect</button>
+  </div>
+  <div class="status-dot" id="statusDot"></div>
+  <span class="status-text" id="statusText">disconnected</span>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <div class="nav-list">
+      <div class="nav-item active" onclick="showView('overview')" id="nav-overview">
+        <span class="nav-icon">◈</span><span>Overview</span>
+      </div>
+      <div class="nav-item" onclick="showView('peers')" id="nav-peers">
+        <span class="nav-icon">◉</span><span>Peers</span>
+        <span class="nav-count" id="cnt-peers">—</span>
+      </div>
+      <div class="nav-item" onclick="showView('sessions')" id="nav-sessions">
+        <span class="nav-icon">◫</span><span>Sessions</span>
+        <span class="nav-count" id="cnt-sessions">—</span>
+      </div>
+      <div class="nav-item" onclick="showView('messages')" id="nav-messages">
+        <span class="nav-icon">◷</span><span>Messages</span>
+        <span class="nav-count" id="cnt-messages">—</span>
+      </div>
+      <div class="nav-item" onclick="showView('collections')" id="nav-collections">
+        <span class="nav-icon">▦</span><span>Collections</span>
+        <span class="nav-count" id="cnt-collections">—</span>
+      </div>
+      <div class="nav-item" onclick="showView('search')" id="nav-search">
+        <span class="nav-icon">⌕</span><span>Search</span>
+      </div>
+      <div class="nav-item" onclick="showView('dialectic')" id="nav-dialectic">
+        <span class="nav-icon">⧩</span><span>Dialectic</span>
+      </div>
+    </div>
+    <div class="sidebar-footer" id="sidebarInfo">not connected</div>
+  </div>
+
+  <div class="main" id="mainContent">
+
+    <!-- OVERVIEW VIEW -->
+    <div class="view active" id="view-overview">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Overview</div>
+          <div class="page-sub" id="ws-label">connect to a Honcho instance to begin</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-ghost" onclick="refreshAll()">↺ Refresh</button>
+        </div>
+      </div>
+      <div class="content" id="overviewContent">
+        <div class="empty">
+          <div class="empty-icon">◈</div>
+          <div class="empty-title">Not connected</div>
+          <div class="empty-sub">Enter your Honcho base URL and workspace ID above, then click Connect.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PEERS VIEW -->
+    <div class="view" id="view-peers">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Peers</div>
+          <div class="page-sub">All peers in workspace</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-ghost" onclick="loadPeers()">↺ Refresh</button>
+          <button class="btn" onclick="openCreatePeer()">+ New peer</button>
+        </div>
+      </div>
+      <div class="content" id="peersContent">
+        <div class="empty"><div class="empty-icon">◉</div><div class="empty-title">Connect first</div></div>
+      </div>
+      <div class="pagination" id="peersPagination" style="padding: 12px 24px;"></div>
+    </div>
+
+    <!-- SESSIONS VIEW -->
+    <div class="view" id="view-sessions">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Sessions</div>
+          <div class="page-sub" id="sessionsSubtitle">All sessions in workspace</div>
+        </div>
+        <div class="page-actions">
+          <select id="sessionPeerFilter" class="form-input" style="width:auto; font-size:12px; padding:5px 10px;"
+            onchange="loadSessions()">
+            <option value="">All peers</option>
+          </select>
+          <button class="btn btn-ghost" onclick="loadSessions()">↺ Refresh</button>
+          <button class="btn" onclick="openCreateSession()">+ New session</button>
+        </div>
+      </div>
+      <div class="content" id="sessionsContent">
+        <div class="empty"><div class="empty-icon">◫</div><div class="empty-title">Connect first</div></div>
+      </div>
+      <div class="pagination" id="sessionsPagination" style="padding: 12px 24px;"></div>
+    </div>
+
+    <!-- MESSAGES VIEW -->
+    <div class="view" id="view-messages">
+      <div class="breadcrumb" id="msgBreadcrumb" style="display:none">
+        <span onclick="showView('sessions')">Sessions</span>
+        <span class="sep">›</span>
+        <span class="current" id="msgSessionLabel">—</span>
+      </div>
+      <div class="page-header">
+        <div>
+          <div class="page-title">Messages</div>
+          <div class="page-sub" id="msgsSubtitle">Select a session to view messages</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-ghost" onclick="loadMessages()" id="refreshMsgsBtn" style="display:none">↺ Refresh</button>
+          <button class="btn" onclick="openAddMessage()" id="addMsgBtn" style="display:none">+ Add message</button>
+        </div>
+      </div>
+      <div class="content" id="messagesContent" style="max-width:800px">
+        <div class="empty"><div class="empty-icon">◷</div><div class="empty-title">Select a session</div><div class="empty-sub">Click any session to view its messages</div></div>
+      </div>
+      <div class="pagination" id="msgsPagination" style="padding: 12px 24px;"></div>
+    </div>
+
+    <!-- COLLECTIONS VIEW -->
+    <div class="view" id="view-collections">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Collections & Documents</div>
+          <div class="page-sub">Peer knowledge collections</div>
+        </div>
+        <div class="page-actions">
+          <select id="collPeerFilter" class="form-input" style="width:auto; font-size:12px; padding:5px 10px;"
+            onchange="loadCollections()">
+            <option value="">Select peer…</option>
+          </select>
+          <button class="btn btn-ghost" onclick="loadCollections()">↺ Refresh</button>
+        </div>
+      </div>
+      <div class="content" id="collectionsContent">
+        <div class="empty"><div class="empty-icon">▦</div><div class="empty-title">Select a peer to see collections</div></div>
+      </div>
+    </div>
+
+    <!-- SEARCH VIEW -->
+    <div class="view" id="view-search">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Search</div>
+          <div class="page-sub">Semantic search across messages and conclusions</div>
+        </div>
+      </div>
+      <div class="content">
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="display:grid; grid-template-columns: 1fr auto auto; gap:10px; align-items:end;">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Search query</label>
+              <input type="text" class="form-input" id="searchQuery" placeholder="What do I remember about this user?" onkeydown="if(event.key==='Enter') runSearch()" />
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Peer</label>
+              <select class="form-input" id="searchPeer" style="width:150px; font-size:12px;">
+                <option value="">All peers</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">&nbsp;</label>
+              <button class="btn" onclick="runSearch()" style="height:38px; display:block;">Search</button>
+            </div>
+          </div>
+          <div id="searchResults">
+            <div class="empty" style="padding:40px">
+              <div class="empty-icon">⌕</div>
+              <div class="empty-title">Enter a query to search</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIALECTIC VIEW -->
+    <div class="view" id="view-dialectic">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dialectic</div>
+          <div class="page-sub">Query Honcho's reasoning about a peer</div>
+        </div>
+      </div>
+      <div class="content">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; max-width:900px;">
+          <div>
+            <div class="form-group">
+              <label class="form-label">Peer</label>
+              <select class="form-input" id="dialecticPeer">
+                <option value="">Select peer…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Session (optional)</label>
+              <select class="form-input" id="dialecticSession">
+                <option value="">All sessions</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reasoning level</label>
+              <select class="form-input" id="dialecticLevel">
+                <option value="minimal">Minimal (fast)</option>
+                <option value="low" selected>Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="max">Max (slow)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Question</label>
+              <textarea class="form-input" id="dialecticQuery" rows="4" placeholder="What are this user's main interests?"></textarea>
+            </div>
+            <button class="btn" onclick="runDialectic()" style="width:100%">Ask Honcho</button>
+          </div>
+          <div>
+            <div class="form-label" style="margin-bottom:8px;">Response</div>
+            <div id="dialecticResult" style="background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px; min-height:300px; font-size:13px; color:var(--text2); line-height:1.6; white-space:pre-wrap; font-family:var(--font);">
+              Response will appear here...
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:24px; max-width:900px;">
+          <div class="form-label" style="margin-bottom:8px;">Peer Representation (card)</div>
+          <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+            <select class="form-input" id="repPeer" style="width:180px; font-size:12px;">
+              <option value="">Select peer…</option>
+            </select>
+            <select class="form-input" id="repSession" style="width:180px; font-size:12px;">
+              <option value="">Select session…</option>
+            </select>
+            <select class="form-input" id="repDetail" style="width:130px; font-size:12px;">
+              <option value="card">card</option>
+              <option value="full">full</option>
+            </select>
+            <button class="btn btn-sm" onclick="loadRepresentation()" style="padding:6px 14px; font-size:12px;">Load</button>
+          </div>
+          <div id="repResult" style="background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px; min-height:120px; font-size:13px; color:var(--text2); line-height:1.6; white-space:pre-wrap; font-family:var(--font);">
+            Select a peer and session to load their representation...
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+
+  <!-- DETAIL PANEL -->
+  <div class="detail-panel hidden" id="detailPanel">
+    <div class="panel-header">
+      <div class="panel-title" id="panelTitle">Detail</div>
+      <button class="panel-close" onclick="closePanel()">✕</button>
+    </div>
+    <div class="panel-body" id="panelBody"></div>
+  </div>
+
+</div><!-- end layout -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this) closeModal()">
+  <div class="modal">
+    <div class="modal-header"><span id="modalTitle">Modal</span><button class="panel-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ─── STATE ─────────────────────────────────────── */
+let state = {
+  baseUrl: window.location.origin,
+  apiKey: '',
+  workspaceId: 'hermes',
+  connected: false,
+  peers: [],
+  sessions: [],
+  currentSessionId: null,
+  peersPage: 1, sessionsPage: 1, msgsPage: 1,
+  peersTotal: 0, sessionsTotal: 0, msgsTotal: 0,
+};
+
+/* ─── API ────────────────────────────────────────── */
+async function api(path, method='GET', body=null) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (state.apiKey) headers['Authorization'] = `Bearer ${state.apiKey}`;
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(state.baseUrl + path, opts);
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`${res.status}: ${txt.slice(0,200)}`);
+  }
+  const ct = res.headers.get('content-type') || '';
+  if (ct.includes('application/json')) return res.json();
+  return res.text();
+}
+
+/* ─── CONNECT ────────────────────────────────────── */
+async function connect() {
+  state.baseUrl = document.getElementById('baseUrl').value.replace(/\/$/, '');
+  state.apiKey = document.getElementById('apiKey').value.trim();
+  state.workspaceId = document.getElementById('workspaceId').value.trim();
+  setStatus('connecting…', '');
+  try {
+    const ws = await api(`/v3/workspaces/${state.workspaceId}`);
+    state.connected = true;
+    setStatus('connected', 'connected');
+    document.getElementById('ws-label').textContent = `workspace: ${ws.id || state.workspaceId}`;
+    document.getElementById('sidebarInfo').textContent = state.workspaceId;
+    showToast('Connected to ' + state.baseUrl, 'success');
+    refreshAll();
+  } catch(e) {
+    setStatus('error: ' + e.message, 'error');
+    showToast('Connection failed: ' + e.message, 'error');
+  }
+}
+
+function setStatus(text, cls) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'status-dot' + (cls ? ' ' + cls : '');
+  txt.textContent = text;
+}
+
+/* ─── NAVIGATION ──────────────────────────────────── */
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  onViewChanged(name);
+}
+
+function closePanel() { document.getElementById('detailPanel').classList.add('hidden'); }
+
+/* ─── REFRESH ALL ─────────────────────────────────── */
+async function refreshAll() {
+  if (!state.connected) return;
+  loadPeers(true);
+  loadSessions(true);
+}
+
+/* ─── PEERS ───────────────────────────────────────── */
+async function loadPeers(silent=false) {
+  if (!state.connected) return;
+  setContent('peersContent', loadingHtml());
+  try {
+    const data = await api(`/v3/workspaces/${state.workspaceId}/peers?page=${state.peersPage}&page_size=20`);
+    state.peers = data.items || [];
+    state.peersTotal = data.total || state.peers.length;
+    document.getElementById('cnt-peers').textContent = state.peersTotal;
+    // Populate peer selects
+    populatePeerSelects();
+    renderPeersTable();
+  } catch(e) {
+    setContent('peersContent', errorHtml(e));
+  }
+}
+
+function renderPeersTable() {
+  if (!state.peers.length) {
+    setContent('peersContent', emptyHtml('No peers found in this workspace'));
+    return;
+  }
+  let html = `<div class="card"><table>
+    <thead><tr><th>ID</th><th>Name</th><th>Created</th><th>Metadata</th><th></th></tr></thead><tbody>`;
+  for (const p of state.peers) {
+    const meta = p.metadata ? JSON.stringify(p.metadata) : '—';
+    html += `<tr onclick="showPeerDetail('${p.id}')">
+      <td class="mono">${p.id}</td>
+      <td><strong>${p.id}</strong></td>
+      <td class="mono" style="color:var(--text3)">${fmtDate(p.created_at)}</td>
+      <td class="mono" style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${meta.slice(0,60)}${meta.length>60?'…':''}</td>
+      <td><button class="btn btn-sm" onclick="event.stopPropagation();showPeerSessions('${p.id}')">Sessions →</button></td>
+    </tr>`;
+  }
+  html += '</tbody></table></div>';
+  setContent('peersContent', html);
+  renderPagination('peersPagination', state.peersPage, state.peersTotal, 20, (p) => { state.peersPage=p; loadPeers(); });
+}
+
+function populatePeerSelects() {
+  ['sessionPeerFilter','collPeerFilter','searchPeer','dialecticPeer','repPeer'].forEach(id => {
+    const el = document.getElementById(id);
+    const cur = el.value;
+    while (el.options.length > 1) el.remove(1);
+    for (const p of state.peers) {
+      const opt = document.createElement('option');
+      opt.value = p.id; opt.textContent = p.id;
+      el.appendChild(opt);
+    }
+    if (cur) el.value = cur;
+  });
+}
+
+async function showPeerDetail(peerId) {
+  const peer = state.peers.find(p => p.id === peerId);
+  if (!peer) return;
+  // Load sessions count for this peer
+  let sessCount = '…';
+  try {
+    const sd = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/sessions?page=1&page_size=1`);
+    sessCount = sd.total || '?';
+  } catch(e) {}
+
+  const panel = document.getElementById('detailPanel');
+  panel.classList.remove('hidden');
+  document.getElementById('panelTitle').textContent = 'Peer: ' + peerId;
+  document.getElementById('panelBody').innerHTML = `
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <div class="peer-avatar">${peerId.slice(0,2).toUpperCase()}</div>
+      <div><div style="font-size:15px; font-weight:600; color:var(--text)">${peerId}</div>
+      <div style="font-size:12px; color:var(--text3); font-family:var(--font); margin-top:2px">${peer.id}</div></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-num">${sessCount}</div><div class="stat-label">sessions</div></div>
+      <div class="stat-box"><div class="stat-num">${fmtDate(peer.created_at)}</div><div class="stat-label">created</div></div>
+    </div>
+    <div class="field"><div class="field-label">Peer ID</div><div class="field-value">${peer.id}</div></div>
+    ${peer.metadata && Object.keys(peer.metadata).length ? `<div class="field"><div class="field-label">Metadata</div><div class="field-value">${JSON.stringify(peer.metadata, null, 2)}</div></div>` : ''}
+    ${peer.configuration && Object.keys(peer.configuration).length ? `<div class="field"><div class="field-label">Configuration</div><div class="field-value">${JSON.stringify(peer.configuration, null, 2)}</div></div>` : ''}
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+      <button class="btn" onclick="showPeerSessions('${peerId}')">View sessions →</button>
+      <button class="btn btn-sm" onclick="loadPeerCollections('${peerId}')">View collections</button>
+    </div>`;
+}
+
+function showPeerSessions(peerId) {
+  document.getElementById('sessionPeerFilter').value = peerId;
+  showView('sessions');
+  loadSessions();
+}
+
+function loadPeerCollections(peerId) {
+  document.getElementById('collPeerFilter').value = peerId;
+  showView('collections');
+  loadCollections();
+  closePanel();
+}
+
+/* ─── SESSIONS ────────────────────────────────────── */
+async function loadSessions(silent=false) {
+  if (!state.connected) return;
+  const peerFilter = document.getElementById('sessionPeerFilter').value;
+  setContent('sessionsContent', loadingHtml());
+  try {
+    let url;
+    if (peerFilter) {
+      url = `/v3/workspaces/${state.workspaceId}/peers/${peerFilter}/sessions?page=${state.sessionsPage}&page_size=20`;
+    } else {
+      url = `/v3/workspaces/${state.workspaceId}/sessions?page=${state.sessionsPage}&page_size=20`;
+    }
+    const data = await api(url);
+    state.sessions = data.items || [];
+    state.sessionsTotal = data.total || state.sessions.length;
+    document.getElementById('cnt-sessions').textContent = state.sessionsTotal;
+    document.getElementById('sessionsSubtitle').textContent = peerFilter
+      ? `Sessions for peer: ${peerFilter}` : `All sessions in workspace`;
+    renderSessionsTable();
+    // populate dialectic session selects
+    populateSessionSelects();
+  } catch(e) {
+    setContent('sessionsContent', errorHtml(e));
+  }
+}
+
+function renderSessionsTable() {
+  if (!state.sessions.length) {
+    setContent('sessionsContent', emptyHtml('No sessions found'));
+    return;
+  }
+  let html = `<div class="card"><table>
+    <thead><tr><th>ID</th><th>Peers</th><th>Messages</th><th>Created</th><th></th></tr></thead><tbody>`;
+  for (const s of state.sessions) {
+    const peers = (s.peers || []).map(p => `<span class="badge badge-purple">${typeof p==='object'?p.id:p}</span>`).join(' ');
+    html += `<tr onclick="openSessionMessages('${s.id}', '${s.id.slice(0,12)}…')">
+      <td class="mono">${s.id.slice(0,12)}…</td>
+      <td>${peers || '<span style="color:var(--text3)">—</span>'}</td>
+      <td class="mono" style="color:var(--text3)">${s.message_count ?? '?'}</td>
+      <td class="mono" style="color:var(--text3)">${fmtDate(s.created_at)}</td>
+      <td><button class="btn btn-sm" onclick="event.stopPropagation();openSessionMessages('${s.id}','${s.id.slice(0,12)}…')">Messages →</button></td>
+    </tr>`;
+  }
+  html += '</tbody></table></div>';
+  setContent('sessionsContent', html);
+  renderPagination('sessionsPagination', state.sessionsPage, state.sessionsTotal, 20, (p) => { state.sessionsPage=p; loadSessions(); });
+}
+
+function populateSessionSelects() {
+  ['dialecticSession','repSession'].forEach(id => {
+    const el = document.getElementById(id);
+    while (el.options.length > 1) el.remove(1);
+    for (const s of state.sessions) {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.id.slice(0,16) + (s.id.length > 16 ? '…' : '');
+      el.appendChild(opt);
+    }
+  });
+}
+
+function openSessionMessages(sessionId, label) {
+  state.currentSessionId = sessionId;
+  state.msgsPage = 1;
+  document.getElementById('msgBreadcrumb').style.display = '';
+  document.getElementById('msgSessionLabel').textContent = label;
+  document.getElementById('msgsSubtitle').textContent = `Session: ${sessionId}`;
+  document.getElementById('refreshMsgsBtn').style.display = '';
+  document.getElementById('addMsgBtn').style.display = '';
+  showView('messages');
+  loadMessages();
+}
+
+/* ─── MESSAGES ─────────────────────────────────────── */
+async function loadMessages() {
+  if (!state.currentSessionId) return;
+  setContent('messagesContent', loadingHtml());
+  try {
+    const data = await api(`/v3/workspaces/${state.workspaceId}/sessions/${state.currentSessionId}/messages?page=${state.msgsPage}&page_size=30`);
+    const msgs = data.items || [];
+    state.msgsTotal = data.total || msgs.length;
+    document.getElementById('cnt-messages').textContent = state.msgsTotal;
+    renderMessages(msgs);
+  } catch(e) {
+    setContent('messagesContent', errorHtml(e));
+  }
+}
+
+function renderMessages(msgs) {
+  if (!msgs.length) {
+    setContent('messagesContent', emptyHtml('No messages in this session'));
+    return;
+  }
+  let html = '';
+  for (const m of msgs) {
+    const isUser = (m.peer_role === 'user' || m.sender_id);
+    const role = m.peer_role || (m.sender_id ? 'peer' : 'system');
+    const roleClass = role === 'user' ? 'user' : role === 'ai' ? 'ai' : '';
+    const content = typeof m.content === 'string' ? m.content
+      : typeof m.content === 'object' ? JSON.stringify(m.content, null, 2) : String(m.content);
+    html += `<div class="message-bubble ${roleClass}">
+      <div class="msg-meta">${role}${m.peer_id ? ' · ' + m.peer_id : ''} · ${fmtDate(m.created_at)} · <span class="mono">${m.id ? m.id.slice(0,10)+'…' : '?'}</span></div>
+      <div style="white-space:pre-wrap; word-break:break-word">${escHtml(content)}</div>
+      ${m.metadata && Object.keys(m.metadata).length ? `<div style="margin-top:6px"><span class="badge badge-gray">metadata</span> <span class="mono" style="font-size:11px;color:var(--text3)">${JSON.stringify(m.metadata).slice(0,80)}</span></div>` : ''}
+    </div>`;
+  }
+  setContent('messagesContent', html);
+  renderPagination('msgsPagination', state.msgsPage, state.msgsTotal, 30, (p) => { state.msgsPage=p; loadMessages(); });
+}
+
+/* ─── COLLECTIONS ─────────────────────────────────── */
+async function loadCollections() {
+  const peerId = document.getElementById('collPeerFilter').value;
+  if (!peerId) {
+    setContent('collectionsContent', emptyHtml('Select a peer to browse their collections'));
+    return;
+  }
+  setContent('collectionsContent', loadingHtml());
+  try {
+    const data = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/collections?page=1&page_size=50`);
+    const colls = data.items || [];
+    if (!colls.length) {
+      setContent('collectionsContent', emptyHtml('No collections for this peer'));
+      return;
+    }
+    let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">';
+    for (const c of colls) {
+      html += `<div class="card" onclick="loadDocs('${peerId}','${c.id}','${escHtml(c.id)}')" style="cursor:pointer">
+        <div class="card-header">
+          <span class="badge badge-purple">collection</span>
+          <div class="card-title" style="font-family:var(--font)">${c.id}</div>
+        </div>
+        <div class="card-body" style="font-size:12px; color:var(--text3)">
+          <div>Created: ${fmtDate(c.created_at)}</div>
+          ${c.metadata && Object.keys(c.metadata).length ? `<div class="mono" style="margin-top:4px">${JSON.stringify(c.metadata).slice(0,80)}</div>` : ''}
+        </div>
+      </div>`;
+    }
+    html += '</div>';
+    setContent('collectionsContent', html);
+    document.getElementById('cnt-collections').textContent = colls.length;
+  } catch(e) {
+    setContent('collectionsContent', errorHtml(e));
+  }
+}
+
+async function loadDocs(peerId, collId, collLabel) {
+  const panel = document.getElementById('detailPanel');
+  panel.classList.remove('hidden');
+  document.getElementById('panelTitle').textContent = 'Collection: ' + collLabel;
+  document.getElementById('panelBody').innerHTML = loadingHtml();
+  try {
+    const data = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/collections/${collId}/documents?page=1&page_size=50`);
+    const docs = data.items || [];
+    if (!docs.length) {
+      document.getElementById('panelBody').innerHTML = emptyHtml('No documents in this collection');
+      return;
+    }
+    let html = `<div class="field-label" style="margin-bottom:8px">${docs.length} document(s)</div>`;
+    for (const d of docs) {
+      const content = typeof d.content === 'string' ? d.content : JSON.stringify(d.content, null, 2);
+      html += `<div class="doc-item" onclick="toggleDocExpand(this, \`${escHtml(content).replace(/`/g,'\\`')}\`)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span class="badge badge-gray">doc</span>
+          <span class="mono" style="font-size:11px;color:var(--text3)">${d.id ? d.id.slice(0,16)+'…' : '?'}</span>
+          <span class="mono" style="font-size:11px;color:var(--text3);margin-left:auto">${fmtDate(d.created_at)}</span>
+        </div>
+        <div class="doc-content">${escHtml(content.slice(0,300))}</div>
+      </div>`;
+    }
+    document.getElementById('panelBody').innerHTML = html;
+  } catch(e) {
+    document.getElementById('panelBody').innerHTML = errorHtml(e);
+  }
+}
+
+function toggleDocExpand(el, content) {
+  const dc = el.querySelector('.doc-content');
+  if (el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    dc.style.maxHeight = '80px';
+    dc.textContent = content.slice(0,300);
+  } else {
+    el.classList.add('selected');
+    dc.style.maxHeight = '400px';
+    dc.textContent = content;
+    dc.style.overflow = 'auto';
+  }
+}
+
+/* ─── SEARCH ──────────────────────────────────────── */
+async function runSearch() {
+  const q = document.getElementById('searchQuery').value.trim();
+  const peer = document.getElementById('searchPeer').value;
+  if (!q) return;
+  document.getElementById('searchResults').innerHTML = loadingHtml();
+  try {
+    let url = `/v3/workspaces/${state.workspaceId}/search?query=${encodeURIComponent(q)}`;
+    if (peer) url += `&peer_id=${encodeURIComponent(peer)}`;
+    const data = await api(url);
+    const results = data.items || data || [];
+    if (!results.length) {
+      document.getElementById('searchResults').innerHTML = emptyHtml('No results found');
+      return;
+    }
+    let html = `<div class="field-label" style="margin-bottom:10px">${results.length} result(s)</div>`;
+    for (const r of results) {
+      const content = typeof r.content === 'string' ? r.content : JSON.stringify(r.content, null, 2);
+      const score = r.score != null ? `<span class="badge badge-green">${(r.score*100).toFixed(1)}%</span>` : '';
+      html += `<div class="message-bubble">
+        <div class="msg-meta">${r.type || 'result'} ${score} ${r.session_id ? '· session: '+r.session_id.slice(0,10)+'…' : ''} ${r.peer_id ? '· peer: '+r.peer_id : ''}</div>
+        <div style="white-space:pre-wrap; word-break:break-word">${escHtml(content)}</div>
+      </div>`;
+    }
+    document.getElementById('searchResults').innerHTML = html;
+  } catch(e) {
+    document.getElementById('searchResults').innerHTML = errorHtml(e);
+  }
+}
+
+/* ─── DIALECTIC ───────────────────────────────────── */
+async function runDialectic() {
+  const peerId = document.getElementById('dialecticPeer').value;
+  const sessionId = document.getElementById('dialecticSession').value;
+  const query = document.getElementById('dialecticQuery').value.trim();
+  const level = document.getElementById('dialecticLevel').value;
+  if (!peerId) { showToast('Select a peer', 'error'); return; }
+  if (!query) { showToast('Enter a question', 'error'); return; }
+  document.getElementById('dialecticResult').textContent = 'Asking Honcho…';
+  try {
+    const body = { queries: [{ content: query }], reasoning_level: level };
+    if (sessionId) body.session_id = sessionId;
+    const data = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/chat`, 'POST', body);
+    const content = data.content || data.response || data.message || JSON.stringify(data, null, 2);
+    document.getElementById('dialecticResult').textContent = typeof content === 'object'
+      ? JSON.stringify(content, null, 2) : content;
+  } catch(e) {
+    document.getElementById('dialecticResult').textContent = 'Error: ' + e.message;
+  }
+}
+
+async function loadRepresentation() {
+  const peerId = document.getElementById('repPeer').value;
+  const sessionId = document.getElementById('repSession').value;
+  const detail = document.getElementById('repDetail').value;
+  if (!peerId || !sessionId) { showToast('Select peer and session', 'error'); return; }
+  document.getElementById('repResult').textContent = 'Loading…';
+  try {
+    const data = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/sessions/${sessionId}/context?detail=${detail}`);
+    const content = data.content || data.representation || data.card || JSON.stringify(data, null, 2);
+    document.getElementById('repResult').textContent = typeof content === 'object'
+      ? JSON.stringify(content, null, 2) : content;
+  } catch(e) {
+    document.getElementById('repResult').textContent = 'Error: ' + e.message;
+  }
+}
+
+/* ─── OVERVIEW ────────────────────────────────────── */
+async function loadOverview() {
+  const peersN = state.peers.length;
+  const sessN = state.sessions.length;
+  let html = `<div class="overview-grid">
+    <div class="overview-card">
+      <div class="overview-icon" style="background:var(--accent-soft)">◉</div>
+      <div><div class="overview-num">${state.peersTotal || peersN}</div><div class="overview-label">peers</div></div>
+    </div>
+    <div class="overview-card">
+      <div class="overview-icon" style="background:rgba(62,207,142,0.1)">◫</div>
+      <div><div class="overview-num">${state.sessionsTotal || sessN}</div><div class="overview-label">sessions</div></div>
+    </div>
+    <div class="overview-card">
+      <div class="overview-icon" style="background:rgba(241,161,13,0.1)">▦</div>
+      <div><div class="overview-num">${state.peersTotal || '—'}</div><div class="overview-label">workspace peers</div></div>
+    </div>
+    <div class="overview-card">
+      <div class="overview-icon" style="background:rgba(229,72,77,0.1)">⧩</div>
+      <div><div class="overview-num">API</div><div class="overview-label">${state.baseUrl}</div></div>
+    </div>
+  </div>`;
+
+  // Recent peers
+  if (state.peers.length) {
+    html += `<div class="card"><div class="card-header"><span class="badge badge-purple">peers</span><div class="card-title">Recent peers</div></div><table>
+      <thead><tr><th>Peer ID</th><th>Created</th><th></th></tr></thead><tbody>`;
+    for (const p of state.peers.slice(0,5)) {
+      html += `<tr onclick="showPeerDetail('${p.id}')">
+        <td class="mono">${p.id}</td>
+        <td class="mono" style="color:var(--text3)">${fmtDate(p.created_at)}</td>
+        <td><button class="btn btn-sm" onclick="event.stopPropagation();showPeerSessions('${p.id}')">→</button></td>
+      </tr>`;
+    }
+    html += '</tbody></table></div>';
+  }
+
+  if (state.sessions.length) {
+    html += `<div class="card"><div class="card-header"><span class="badge badge-green">sessions</span><div class="card-title">Recent sessions</div></div><table>
+      <thead><tr><th>Session ID</th><th>Peers</th><th>Created</th><th></th></tr></thead><tbody>`;
+    for (const s of state.sessions.slice(0,5)) {
+      const peers = (s.peers || []).map(p => `<span class="badge badge-purple" style="font-size:10px">${typeof p==='object'?p.id:p}</span>`).join(' ');
+      html += `<tr onclick="openSessionMessages('${s.id}','${s.id.slice(0,12)}…')">
+        <td class="mono">${s.id.slice(0,16)}…</td>
+        <td>${peers}</td>
+        <td class="mono" style="color:var(--text3)">${fmtDate(s.created_at)}</td>
+        <td><button class="btn btn-sm" onclick="event.stopPropagation();openSessionMessages('${s.id}','${s.id.slice(0,12)}…')">→</button></td>
+      </tr>`;
+    }
+    html += '</tbody></table></div>';
+  }
+
+  setContent('overviewContent', html);
+}
+
+/* ─── CREATE MODALS ───────────────────────────────── */
+function openCreatePeer() {
+  openModal('Create peer', `
+    <div class="form-group"><label class="form-label">Peer ID</label>
+    <input class="form-input" id="newPeerId" placeholder="e.g. alice or user-123" /></div>
+    <div class="form-group"><label class="form-label">Metadata (JSON, optional)</label>
+    <textarea class="form-input" id="newPeerMeta" rows="3" placeholder='{"role": "user"}'></textarea></div>`,
+    async () => {
+      const id = document.getElementById('newPeerId').value.trim();
+      if (!id) { showToast('Peer ID required', 'error'); return; }
+      let meta = {};
+      const metaStr = document.getElementById('newPeerMeta').value.trim();
+      if (metaStr) { try { meta = JSON.parse(metaStr); } catch(e) { showToast('Invalid JSON', 'error'); return; } }
+      try {
+        await api(`/v3/workspaces/${state.workspaceId}/peers`, 'POST', { id, metadata: meta });
+        showToast('Peer created: ' + id, 'success');
+        closeModal(); loadPeers();
+      } catch(e) { showToast('Error: ' + e.message, 'error'); }
+    });
+}
+
+function openCreateSession() {
+  openModal('Create session', `
+    <div class="form-group"><label class="form-label">Session name (optional)</label>
+    <input class="form-input" id="newSessName" placeholder="leave blank for auto ID" /></div>
+    <div class="form-group"><label class="form-label">Peer IDs (comma-separated)</label>
+    <input class="form-input" id="newSessPeers" placeholder="alice, bob" /></div>`,
+    async () => {
+      const name = document.getElementById('newSessName').value.trim();
+      const peersStr = document.getElementById('newSessPeers').value.trim();
+      const peers = peersStr ? peersStr.split(',').map(p=>p.trim()).filter(Boolean) : [];
+      const body = {};
+      if (name) body.id = name;
+      if (peers.length) body.peer_ids = peers;
+      try {
+        await api(`/v3/workspaces/${state.workspaceId}/sessions`, 'POST', body);
+        showToast('Session created', 'success');
+        closeModal(); loadSessions();
+      } catch(e) { showToast('Error: ' + e.message, 'error'); }
+    });
+}
+
+function openAddMessage() {
+  if (!state.currentSessionId) return;
+  openModal('Add message', `
+    <div class="form-group"><label class="form-label">Peer ID</label>
+    <select class="form-input" id="addMsgPeer">
+      ${state.peers.map(p=>`<option value="${p.id}">${p.id}</option>`).join('')}
+    </select></div>
+    <div class="form-group"><label class="form-label">Content</label>
+    <textarea class="form-input" id="addMsgContent" rows="4" placeholder="Message content…"></textarea></div>`,
+    async () => {
+      const peerId = document.getElementById('addMsgPeer').value;
+      const content = document.getElementById('addMsgContent').value.trim();
+      if (!content) { showToast('Content required', 'error'); return; }
+      try {
+        await api(`/v3/workspaces/${state.workspaceId}/sessions/${state.currentSessionId}/messages`, 'POST',
+          { messages: [{ peer_id: peerId, content }] });
+        showToast('Message added', 'success');
+        closeModal(); loadMessages();
+      } catch(e) { showToast('Error: ' + e.message, 'error'); }
+    });
+}
+
+/* ─── MODAL HELPERS ───────────────────────────────── */
+function openModal(title, body, onConfirm) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('modalFooter').innerHTML = `
+    <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn" id="modalConfirmBtn">Confirm</button>`;
+  document.getElementById('modalConfirmBtn').onclick = onConfirm;
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(() => {
+    const first = document.querySelector('.modal-body input, .modal-body textarea');
+    if (first) first.focus();
+  }, 50);
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+/* ─── UTILITY ─────────────────────────────────────── */
+function setContent(id, html) { document.getElementById(id).innerHTML = html; }
+function loadingHtml() { return `<div class="loading"><div class="spinner"></div>Loading…</div>`; }
+function errorHtml(e) { return `<div class="empty"><div class="empty-icon" style="font-size:24px">⚠</div><div class="empty-title">Error</div><div class="empty-sub" style="color:var(--red);font-family:var(--font)">${escHtml(String(e.message||e))}</div></div>`; }
+function emptyHtml(msg) { return `<div class="empty"><div class="empty-icon">·</div><div class="empty-title">${msg}</div></div>`; }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(d) {
+  if (!d) return '—';
+  try { return new Date(d).toLocaleString(undefined, {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }
+  catch { return d; }
+}
+
+function renderPagination(id, page, total, pageSize, onPage) {
+  const totalPages = Math.ceil(total / pageSize);
+  if (totalPages <= 1) { document.getElementById(id).innerHTML = ''; return; }
+  let html = `<span>Page ${page} of ${totalPages} (${total} total)</span>`;
+  if (page > 1) html += `<button class="btn btn-sm" onclick="(${onPage.toString()})(${page-1})">← Prev</button>`;
+  if (page < totalPages) html += `<button class="btn btn-sm" onclick="(${onPage.toString()})(${page+1})">Next →</button>`;
+  document.getElementById(id).innerHTML = html;
+}
+
+function showToast(msg, type='') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ' '+type : '');
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 3000);
+}
+
+/* ─── INIT / SHORTCUTS ────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closePanel(); }
+});
+
+// Auto-connect if URL param provided
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('url')) {
+  document.getElementById('baseUrl').value = urlParams.get('url');
+  if (urlParams.get('key')) document.getElementById('apiKey').value = urlParams.get('key');
+  if (urlParams.get('workspace')) document.getElementById('workspaceId').value = urlParams.get('workspace');
+  connect();
+}
+
+// Trigger data loads when switching views
+function onViewChanged(name) {
+  if (!state.connected) return;
+  if (name === 'overview') loadOverview();
+  else if (name === 'peers' && !state.peers.length) loadPeers();
+  else if (name === 'sessions' && !state.sessions.length) loadSessions();
+}
+</script>
+</body>
+</html>

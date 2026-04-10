@@ -11,3 +11,4 @@ resources:
   - honcho-postgres-application.yaml
   - honcho-secrets-application.yaml
   - honcho-application.yaml
+  - honcho-ui-application.yaml

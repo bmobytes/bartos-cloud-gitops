@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: honcho-ui
+  namespace: honcho
+  labels:
+    app.kubernetes.io/name: honcho-ui
+    app.kubernetes.io/part-of: honcho
+  annotations:
+    cert-manager.io/cluster-issuer: lab-ca
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - honcho-ui.lab.bartos.media
+      secretName: honcho-ui-tls
+  rules:
+    - host: honcho-ui.lab.bartos.media
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: honcho-ui
+                port:
+                  number: 80
