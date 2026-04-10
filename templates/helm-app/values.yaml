@@ -1,0 +1,10 @@
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: lab-ca
+  hosts:
+    - APP_NAME.lab.bartos.media
+  tls:
+    - secretName: APP_NAME-tls
+      hosts:
+        - APP_NAME.lab.bartos.media

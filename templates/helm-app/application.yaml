@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: APP_NAME
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: APP_NAMESPACE
+  sources:
+    - repoURL: UPSTREAM_HELM_REPO_URL
+      chart: UPSTREAM_CHART_NAME
+      targetRevision: UPSTREAM_CHART_VERSION
+      helm:
+        valueFiles:
+          - $values/apps/APP_GROUP/APP_NAME/values.yaml
+    - repoURL: git@github.com:bmobytes/bartos-cloud-gitops.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

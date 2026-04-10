@@ -48,8 +48,34 @@ helm template netdata netdata/netdata \
   -f apps/monitoring/netdata/values.yaml
 ```
 
+## Conventions
+
+### Supported app patterns
+
+- `templates/plain-app/` — default pattern for plain YAML + Kustomize apps
+- `templates/helm-app/` — upstream Helm chart apps with local values stored in this repo
+
+### TLS defaults
+
+- default internal hostname pattern: `<app>.lab.bartos.media`
+- default ingress class: `nginx`
+- default cluster issuer: `lab-ca`
+- default TLS secret name: `<app>-tls`
+
+### App bootstrap checklist
+
+1. choose `plain-app` or `helm-app`
+2. create the app path under `apps/<group>/<app>/`
+3. fill in `NOTES.md`
+4. document required secret names and keys
+5. create `clusters/bartos-cloud/<app>-application.yaml`
+6. add that child app to `clusters/bartos-cloud/kustomization.yaml`
+7. validate locally
+8. push and verify Argo sync
+
 ## Notes
 
-- This repo stays plain YAML + Kustomize.
+- This repo stays plain YAML + Kustomize by default.
 - Durable cluster changes should land here first, then sync through Argo CD.
 - Emergency direct kubectl changes should be reflected back into GitOps immediately after.
+- See `docs/plans/2026-04-09-bartos-cloud-tls-app-template.md` for the cert-manager + TLS + app-template implementation plan.
