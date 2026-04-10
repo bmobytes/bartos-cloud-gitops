@@ -18,5 +18,9 @@ parent:
     - secretRef:
         name: netdata-cloud-claim
 
+ingress:
+  hosts:
+    - netdata.lab.bartos.media
+
 k8sState:
   enabled: true
