@@ -17,7 +17,7 @@ spec:
       helm:
         valueFiles:
           - $values/apps/infrastructure/cert-manager/values.yaml
-    - repoURL: git@github.com:bmobytes/bartos-cloud-gitops.git
+    - repoURL: https://github.com/bmobytes/bartos-cloud-gitops.git
       targetRevision: main
       ref: values
   syncPolicy:

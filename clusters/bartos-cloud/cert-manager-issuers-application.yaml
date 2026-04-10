@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git@github.com:bmobytes/bartos-cloud-gitops.git
+    repoURL: https://github.com/bmobytes/bartos-cloud-gitops.git
     targetRevision: main
     path: apps/infrastructure/cert-manager-issuers
   destination:
