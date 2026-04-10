@@ -634,7 +634,7 @@
         <span class="nav-count" id="cnt-messages">—</span>
       </div>
       <div class="nav-item" onclick="showView('collections')" id="nav-collections">
-        <span class="nav-icon">▦</span><span>Collections</span>
+        <span class="nav-icon">▦</span><span>Conclusions</span>
         <span class="nav-count" id="cnt-collections">—</span>
       </div>
       <div class="nav-item" onclick="showView('search')" id="nav-search">
@@ -732,24 +732,21 @@
       <div class="pagination" id="msgsPagination" style="padding: 12px 24px;"></div>
     </div>
 
-    <!-- COLLECTIONS VIEW -->
+    <!-- CONCLUSIONS VIEW -->
     <div class="view" id="view-collections">
       <div class="page-header">
         <div>
-          <div class="page-title">Collections & Documents</div>
-          <div class="page-sub">Peer knowledge collections</div>
+          <div class="page-title">Conclusions</div>
+          <div class="page-sub">Honcho-derived conclusions and knowledge</div>
         </div>
         <div class="page-actions">
-          <select id="collPeerFilter" class="form-input" style="width:auto; font-size:12px; padding:5px 10px;"
-            onchange="loadCollections()">
-            <option value="">Select peer…</option>
-          </select>
           <button class="btn btn-ghost" onclick="loadCollections()">↺ Refresh</button>
         </div>
       </div>
       <div class="content" id="collectionsContent">
-        <div class="empty"><div class="empty-icon">▦</div><div class="empty-title">Select a peer to see collections</div></div>
+        <div class="empty"><div class="empty-icon">▦</div><div class="empty-title">Connect to browse conclusions</div></div>
       </div>
+      <div class="pagination" id="conclusionsPagination" style="padding: 12px 24px;"></div>
     </div>
 
     <!-- SEARCH VIEW -->
@@ -850,7 +847,7 @@
             <button class="btn btn-sm" onclick="loadRepresentation()" style="padding:6px 14px; font-size:12px;">Load</button>
           </div>
           <div id="repResult" style="background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px; min-height:120px; font-size:13px; color:var(--text2); line-height:1.6; white-space:pre-wrap; font-family:var(--font);">
-            Select a peer and session to load their representation...
+            Select a peer to load context (session optional)...
           </div>
         </div>
       </div>
@@ -965,7 +962,7 @@ async function loadPeers(silent=false) {
   if (!state.connected) return;
   setContent('peersContent', loadingHtml());
   try {
-    const data = await api(`/v3/workspaces/${state.workspaceId}/peers?page=${state.peersPage}&page_size=20`);
+    const data = await api(`/v3/workspaces/${state.workspaceId}/peers/list?page=${state.peersPage}&size=20`, 'POST');
     state.peers = data.items || [];
     state.peersTotal = data.total || state.peers.length;
     document.getElementById('cnt-peers').textContent = state.peersTotal;
@@ -1000,7 +997,7 @@ function renderPeersTable() {
 }
 
 function populatePeerSelects() {
-  ['sessionPeerFilter','collPeerFilter','searchPeer','dialecticPeer','repPeer'].forEach(id => {
+  ['sessionPeerFilter','searchPeer','dialecticPeer','repPeer'].forEach(id => {
     const el = document.getElementById(id);
     const cur = el.value;
     while (el.options.length > 1) el.remove(1);
@@ -1019,7 +1016,7 @@ async function showPeerDetail(peerId) {
   // Load sessions count for this peer
   let sessCount = '…';
   try {
-    const sd = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/sessions?page=1&page_size=1`);
+    const sd = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/sessions?page=1&size=1`, 'POST');
     sessCount = sd.total || '?';
   } catch(e) {}
 
@@ -1041,7 +1038,7 @@ async function showPeerDetail(peerId) {
     ${peer.configuration && Object.keys(peer.configuration).length ? `<div class="field"><div class="field-label">Configuration</div><div class="field-value">${JSON.stringify(peer.configuration, null, 2)}</div></div>` : ''}
     <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
       <button class="btn" onclick="showPeerSessions('${peerId}')">View sessions →</button>
-      <button class="btn btn-sm" onclick="loadPeerCollections('${peerId}')">View collections</button>
+      <button class="btn btn-sm" onclick="showView('collections'); loadCollections();">View conclusions</button>
     </div>`;
 }
 
@@ -1051,12 +1048,6 @@ function showPeerSessions(peerId) {
   loadSessions();
 }
 
-function loadPeerCollections(peerId) {
-  document.getElementById('collPeerFilter').value = peerId;
-  showView('collections');
-  loadCollections();
-  closePanel();
-}
 
 /* ─── SESSIONS ────────────────────────────────────── */
 async function loadSessions(silent=false) {
@@ -1066,11 +1057,11 @@ async function loadSessions(silent=false) {
   try {
     let url;
     if (peerFilter) {
-      url = `/v3/workspaces/${state.workspaceId}/peers/${peerFilter}/sessions?page=${state.sessionsPage}&page_size=20`;
+      url = `/v3/workspaces/${state.workspaceId}/peers/${peerFilter}/sessions?page=${state.sessionsPage}&size=20`;
     } else {
-      url = `/v3/workspaces/${state.workspaceId}/sessions?page=${state.sessionsPage}&page_size=20`;
+      url = `/v3/workspaces/${state.workspaceId}/sessions/list?page=${state.sessionsPage}&size=20`;
     }
-    const data = await api(url);
+    const data = await api(url, 'POST');
     state.sessions = data.items || [];
     state.sessionsTotal = data.total || state.sessions.length;
     document.getElementById('cnt-sessions').textContent = state.sessionsTotal;
@@ -1136,7 +1127,7 @@ async function loadMessages() {
   if (!state.currentSessionId) return;
   setContent('messagesContent', loadingHtml());
   try {
-    const data = await api(`/v3/workspaces/${state.workspaceId}/sessions/${state.currentSessionId}/messages?page=${state.msgsPage}&page_size=30`);
+    const data = await api(`/v3/workspaces/${state.workspaceId}/sessions/${state.currentSessionId}/messages/list?page=${state.msgsPage}&size=30`, 'POST');
     const msgs = data.items || [];
     state.msgsTotal = data.total || msgs.length;
     document.getElementById('cnt-messages').textContent = state.msgsTotal;
@@ -1168,83 +1159,38 @@ function renderMessages(msgs) {
   renderPagination('msgsPagination', state.msgsPage, state.msgsTotal, 30, (p) => { state.msgsPage=p; loadMessages(); });
 }
 
-/* ─── COLLECTIONS ─────────────────────────────────── */
+/* ─── CONCLUSIONS ─────────────────────────────────── */
+let conclusionsPage = 1;
+let conclusionsTotal = 0;
+
 async function loadCollections() {
-  const peerId = document.getElementById('collPeerFilter').value;
-  if (!peerId) {
-    setContent('collectionsContent', emptyHtml('Select a peer to browse their collections'));
-    return;
-  }
+  if (!state.connected) return;
   setContent('collectionsContent', loadingHtml());
   try {
-    const data = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/collections?page=1&page_size=50`);
-    const colls = data.items || [];
-    if (!colls.length) {
-      setContent('collectionsContent', emptyHtml('No collections for this peer'));
+    const data = await api(`/v3/workspaces/${state.workspaceId}/conclusions/list?page=${conclusionsPage}&size=50`, 'POST');
+    const items = data.items || [];
+    conclusionsTotal = data.total || items.length;
+    document.getElementById('cnt-collections').textContent = conclusionsTotal;
+    if (!items.length) {
+      setContent('collectionsContent', emptyHtml('No conclusions found in this workspace'));
       return;
     }
-    let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">';
-    for (const c of colls) {
-      html += `<div class="card" onclick="loadDocs('${peerId}','${c.id}','${escHtml(c.id)}')" style="cursor:pointer">
-        <div class="card-header">
-          <span class="badge badge-purple">collection</span>
-          <div class="card-title" style="font-family:var(--font)">${c.id}</div>
-        </div>
-        <div class="card-body" style="font-size:12px; color:var(--text3)">
-          <div>Created: ${fmtDate(c.created_at)}</div>
-          ${c.metadata && Object.keys(c.metadata).length ? `<div class="mono" style="margin-top:4px">${JSON.stringify(c.metadata).slice(0,80)}</div>` : ''}
-        </div>
+    let html = '';
+    for (const c of items) {
+      const content = typeof c.content === 'string' ? c.content : JSON.stringify(c.content, null, 2);
+      html += `<div class="message-bubble">
+        <div class="msg-meta">conclusion · <span class="mono">${c.id ? c.id.slice(0,16)+'…' : '?'}</span>
+          ${c.peer_id ? ' · peer: '+c.peer_id : ''}
+          ${c.session_id ? ' · session: '+c.session_id.slice(0,10)+'…' : ''}
+          · ${fmtDate(c.created_at)}</div>
+        <div style="white-space:pre-wrap; word-break:break-word">${escHtml(content)}</div>
+        ${c.metadata && Object.keys(c.metadata).length ? `<div style="margin-top:6px"><span class="badge badge-gray">metadata</span> <span class="mono" style="font-size:11px;color:var(--text3)">${JSON.stringify(c.metadata).slice(0,120)}</span></div>` : ''}
       </div>`;
     }
-    html += '</div>';
-    setContent('collectionsContent', html);
-    document.getElementById('cnt-collections').textContent = colls.length;
+    setContent('collectionsContent', `<div style="max-width:800px">${html}</div>`);
+    renderPagination('conclusionsPagination', conclusionsPage, conclusionsTotal, 50, (p) => { conclusionsPage=p; loadCollections(); });
   } catch(e) {
     setContent('collectionsContent', errorHtml(e));
-  }
-}
-
-async function loadDocs(peerId, collId, collLabel) {
-  const panel = document.getElementById('detailPanel');
-  panel.classList.remove('hidden');
-  document.getElementById('panelTitle').textContent = 'Collection: ' + collLabel;
-  document.getElementById('panelBody').innerHTML = loadingHtml();
-  try {
-    const data = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/collections/${collId}/documents?page=1&page_size=50`);
-    const docs = data.items || [];
-    if (!docs.length) {
-      document.getElementById('panelBody').innerHTML = emptyHtml('No documents in this collection');
-      return;
-    }
-    let html = `<div class="field-label" style="margin-bottom:8px">${docs.length} document(s)</div>`;
-    for (const d of docs) {
-      const content = typeof d.content === 'string' ? d.content : JSON.stringify(d.content, null, 2);
-      html += `<div class="doc-item" onclick="toggleDocExpand(this, \`${escHtml(content).replace(/`/g,'\\`')}\`)">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-          <span class="badge badge-gray">doc</span>
-          <span class="mono" style="font-size:11px;color:var(--text3)">${d.id ? d.id.slice(0,16)+'…' : '?'}</span>
-          <span class="mono" style="font-size:11px;color:var(--text3);margin-left:auto">${fmtDate(d.created_at)}</span>
-        </div>
-        <div class="doc-content">${escHtml(content.slice(0,300))}</div>
-      </div>`;
-    }
-    document.getElementById('panelBody').innerHTML = html;
-  } catch(e) {
-    document.getElementById('panelBody').innerHTML = errorHtml(e);
-  }
-}
-
-function toggleDocExpand(el, content) {
-  const dc = el.querySelector('.doc-content');
-  if (el.classList.contains('selected')) {
-    el.classList.remove('selected');
-    dc.style.maxHeight = '80px';
-    dc.textContent = content.slice(0,300);
-  } else {
-    el.classList.add('selected');
-    dc.style.maxHeight = '400px';
-    dc.textContent = content;
-    dc.style.overflow = 'auto';
   }
 }
 
@@ -1255,10 +1201,10 @@ async function runSearch() {
   if (!q) return;
   document.getElementById('searchResults').innerHTML = loadingHtml();
   try {
-    let url = `/v3/workspaces/${state.workspaceId}/search?query=${encodeURIComponent(q)}`;
-    if (peer) url += `&peer_id=${encodeURIComponent(peer)}`;
-    const data = await api(url);
-    const results = data.items || data || [];
+    const searchBody = { query: q };
+    if (peer) searchBody.filters = { peer_id: peer };
+    const data = await api(`/v3/workspaces/${state.workspaceId}/search`, 'POST', searchBody);
+    const results = Array.isArray(data) ? data : (data.items || []);
     if (!results.length) {
       document.getElementById('searchResults').innerHTML = emptyHtml('No results found');
       return;
@@ -1288,7 +1234,7 @@ async function runDialectic() {
   if (!query) { showToast('Enter a question', 'error'); return; }
   document.getElementById('dialecticResult').textContent = 'Asking Honcho…';
   try {
-    const body = { queries: [{ content: query }], reasoning_level: level };
+    const body = { query, reasoning_level: level };
     if (sessionId) body.session_id = sessionId;
     const data = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/chat`, 'POST', body);
     const content = data.content || data.response || data.message || JSON.stringify(data, null, 2);
@@ -1303,11 +1249,18 @@ async function loadRepresentation() {
   const peerId = document.getElementById('repPeer').value;
   const sessionId = document.getElementById('repSession').value;
   const detail = document.getElementById('repDetail').value;
-  if (!peerId || !sessionId) { showToast('Select peer and session', 'error'); return; }
+  if (!peerId) { showToast('Select a peer', 'error'); return; }
   document.getElementById('repResult').textContent = 'Loading…';
   try {
-    const data = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/sessions/${sessionId}/context?detail=${detail}`);
-    const content = data.content || data.representation || data.card || JSON.stringify(data, null, 2);
+    let data;
+    if (sessionId) {
+      // Session context includes messages, summary, and optional peer-targeted context
+      data = await api(`/v3/workspaces/${state.workspaceId}/sessions/${sessionId}/context?peer_target=${encodeURIComponent(peerId)}`);
+    } else {
+      // Peer context with representation and card
+      data = await api(`/v3/workspaces/${state.workspaceId}/peers/${peerId}/context`);
+    }
+    const content = data.representation || data.peer_representation || data.peer_card || data.summary || data;
     document.getElementById('repResult').textContent = typeof content === 'object'
       ? JSON.stringify(content, null, 2) : content;
   } catch(e) {
@@ -1507,6 +1460,7 @@ function onViewChanged(name) {
   if (name === 'overview') loadOverview();
   else if (name === 'peers' && !state.peers.length) loadPeers();
   else if (name === 'sessions' && !state.sessions.length) loadSessions();
+  else if (name === 'collections') loadCollections();
 }
 </script>
 </body>

@@ -15,17 +15,38 @@ Static HTML UI for browsing Honcho workspaces, peers, sessions, messages, and co
 
 ## API compatibility
 
-The UI was originally written against Honcho v2 endpoints. All API paths have been
-updated to `/v3/` for this deployment. Known limitations:
+The UI was originally written against Honcho v2 endpoints. It has been remapped to the current Honcho v3 API surface used by this cluster.
 
-- **Collections & Documents**: The Collections tab calls `/v3/workspaces/.../peers/.../collections`
-  and `/v3/.../collections/.../documents`. These endpoints existed in v2 but may not be present
-  in v3. If the Honcho instance does not expose collection endpoints, the Collections tab will
-  show an error. This is expected — the rest of the UI (peers, sessions, messages, search,
-  dialectic) should work normally.
-- **Search**: `/v3/workspaces/{id}/search` — verify this endpoint exists on your Honcho version.
-- **Dialectic chat**: `/v3/workspaces/{id}/peers/{id}/chat` — same caveat.
-- **Representation/context**: `/v3/.../sessions/{id}/context` — may differ between versions.
+### Endpoint remaps applied
 
-If any v3 endpoint returns 404, the original v2 paths are easy to restore by editing
-`index.html` (search-replace `/v3/` back to `/v2/`).
+- connect:
+  - from `GET /v3/workspaces/{workspace_id}`
+  - to `POST /v3/workspaces` with `{ id }`
+- peers list:
+  - to `POST /v3/workspaces/{workspace_id}/peers/list`
+- sessions list:
+  - to `POST /v3/workspaces/{workspace_id}/sessions/list`
+- peer-scoped sessions:
+  - to `POST /v3/workspaces/{workspace_id}/peers/{peer_id}/sessions`
+- messages list:
+  - to `POST /v3/workspaces/{workspace_id}/sessions/{session_id}/messages/list`
+- search:
+  - to `POST /v3/workspaces/{workspace_id}/search`
+- dialectic chat:
+  - to `POST /v3/workspaces/{workspace_id}/peers/{peer_id}/chat` with `query`
+- peer context:
+  - `GET /v3/workspaces/{workspace_id}/peers/{peer_id}/context`
+- session context:
+  - `GET /v3/workspaces/{workspace_id}/sessions/{session_id}/context?peer_target=...`
+- collections/documents view:
+  - replaced with workspace-wide **conclusions** using `POST /v3/workspaces/{workspace_id}/conclusions/list`
+
+### Removed / repurposed feature
+
+- The old Collections/Documents view no longer exists in current Honcho v3 as used here.
+- The UI now uses that tab to show **Conclusions** instead.
+
+### Remaining caveats
+
+- The single-file UI is still a pragmatic compatibility layer, not a full product-grade Honcho v3 client.
+- If a future Honcho release changes request/response shapes, the affected tab may need another small patch.
