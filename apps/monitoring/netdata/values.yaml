@@ -1,0 +1,22 @@
+child:
+  claiming:
+    enabled: true
+    token: ""
+    rooms: "b0a5f9a1-6e9b-49af-910c-fda989ba88e6"
+    url: "https://app.netdata.cloud"
+  envFrom:
+    - secretRef:
+        name: netdata-cloud-claim
+
+parent:
+  claiming:
+    enabled: true
+    token: ""
+    rooms: "b0a5f9a1-6e9b-49af-910c-fda989ba88e6"
+    url: "https://app.netdata.cloud"
+  envFrom:
+    - secretRef:
+        name: netdata-cloud-claim
+
+k8sState:
+  enabled: true

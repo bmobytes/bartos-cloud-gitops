@@ -4,3 +4,4 @@ resources:
   - external-dns-application.yaml
   - hermes-rbac-application.yaml
   - test-app-application.yaml
+  - netdata-application.yaml

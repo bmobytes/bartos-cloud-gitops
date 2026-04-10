@@ -14,6 +14,7 @@ GitOps repo for the `bartos-cloud` Kubernetes cluster.
 - `external-dns`
 - `hermes-rbac`
 - `test-app`
+- `netdata`
 
 ## Bootstrap
 
@@ -38,6 +39,13 @@ kubectl kustomize clusters/bartos-cloud
 kubectl kustomize apps/infrastructure/external-dns
 kubectl kustomize apps/infrastructure/hermes-rbac
 kubectl kustomize apps/workloads/test-app
+
+# Netdata uses an upstream Helm chart with values stored in this repo.
+helm repo add netdata https://netdata.github.io/helmchart
+helm repo update
+helm template netdata netdata/netdata \
+  --version 3.7.163 \
+  -f apps/monitoring/netdata/values.yaml
 ```
 
 ## Notes

@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: netdata
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: netdata
+  sources:
+    - repoURL: https://netdata.github.io/helmchart
+      chart: netdata
+      targetRevision: 3.7.163
+      helm:
+        valueFiles:
+          - $values/apps/monitoring/netdata/values.yaml
+    - repoURL: git@github.com:bmobytes/bartos-cloud-gitops.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
