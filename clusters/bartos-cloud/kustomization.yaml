@@ -5,3 +5,5 @@ resources:
   - hermes-rbac-application.yaml
   - test-app-application.yaml
   - netdata-application.yaml
+  - infisical-operator-application.yaml
+  - infisical-secrets-application.yaml

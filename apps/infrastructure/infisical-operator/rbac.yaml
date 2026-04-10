@@ -1,0 +1,28 @@
+# RBAC: allow the operator to manage secrets across namespaces
+# in addition to its own cluster-scoped role.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: infisical-secret-manager
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+    resourceNames: [] # all
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: infisical-secret-manager
+subjects:
+  - kind: ServiceAccount
+    name: infisical-secrets-operator
+    namespace: infisical
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: infisical-secret-manager

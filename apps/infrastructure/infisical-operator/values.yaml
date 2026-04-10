@@ -1,0 +1,21 @@
+# Infisical Secrets Operator Helm values
+# https://github.com/Infisical/k8-operator
+
+hostAPI: "https://app.infisical.com/api"
+
+controllerManager:
+  replicas: 1
+  serviceAccount:
+    create: true
+    name: "infisical-secrets-operator"
+  manager:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 128Mi
+
+# Install CRDs automatically
+installCRDs: true
