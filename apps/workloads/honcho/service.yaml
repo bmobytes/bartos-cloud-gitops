@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: honcho
+  namespace: honcho
+  labels:
+    app.kubernetes.io/name: honcho-api
+    app.kubernetes.io/part-of: honcho
+spec:
+  selector:
+    app.kubernetes.io/name: honcho-api
+  ports:
+    - port: 80
+      targetPort: 8000
+      name: http

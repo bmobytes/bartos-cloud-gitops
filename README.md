@@ -15,8 +15,10 @@ GitOps repo for the `bartos-cloud` Kubernetes cluster.
 - `cert-manager-issuers` — internal CA bootstrap (`lab-ca` ClusterIssuer)
 - `external-dns`
 - `hermes-rbac`
-- `test-app`
 - `netdata`
+- `honcho-postgres` — dedicated Postgres with pgvector for Honcho
+- `honcho-secrets` — Infisical-managed LLM API key for Honcho
+- `honcho` — Honcho API + deriver worker (user context management for LLMs)
 
 ## Bootstrap
 
@@ -41,7 +43,9 @@ kubectl kustomize clusters/bartos-cloud
 kubectl kustomize apps/infrastructure/external-dns
 kubectl kustomize apps/infrastructure/hermes-rbac
 kubectl kustomize apps/infrastructure/cert-manager-issuers
-kubectl kustomize apps/workloads/test-app
+kubectl kustomize apps/workloads/honcho-postgres
+kubectl kustomize apps/secrets/honcho
+kubectl kustomize apps/workloads/honcho
 
 # cert-manager uses an upstream Helm chart with values stored in this repo.
 helm repo add jetstack https://charts.jetstack.io

@@ -1,24 +1,27 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: test-app
-  namespace: test-app
+  name: honcho
+  namespace: honcho
+  labels:
+    app.kubernetes.io/name: honcho
+    app.kubernetes.io/part-of: honcho
   annotations:
     cert-manager.io/cluster-issuer: lab-ca
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - test-app.lab.bartos.media
-      secretName: test-app-tls
+        - honcho.lab.bartos.media
+      secretName: honcho-tls
   rules:
-    - host: test-app.lab.bartos.media
+    - host: honcho.lab.bartos.media
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: test-app
+                name: honcho
                 port:
                   number: 80

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: honcho-deriver
+  namespace: honcho
+  labels:
+    app.kubernetes.io/name: honcho-deriver
+    app.kubernetes.io/component: deriver
+    app.kubernetes.io/part-of: honcho
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: honcho-deriver
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: honcho-deriver
+        app.kubernetes.io/component: deriver
+        app.kubernetes.io/part-of: honcho
+    spec:
+      containers:
+        - name: honcho-deriver
+          image: ghcr.io/plastic-labs/honcho:latest
+          command: ["python", "-m", "src.deriver"]
+          envFrom:
+            - configMapRef:
+                name: honcho-config
+          env:
+            - name: DB_CONNECTION_URI
+              valueFrom:
+                secretKeyRef:
+                  name: honcho-db
+                  key: DB_CONNECTION_URI
+            - name: LLM_OPENAI_COMPATIBLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: honcho-llm
+                  key: OPENROUTER_HONCHO
+            - name: DERIVER_ENABLED
+              value: "true"

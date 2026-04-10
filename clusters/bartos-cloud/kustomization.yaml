@@ -5,7 +5,9 @@ resources:
   - cert-manager-issuers-application.yaml
   - external-dns-application.yaml
   - hermes-rbac-application.yaml
-  - test-app-application.yaml
   - netdata-application.yaml
   - infisical-operator-application.yaml
   - infisical-secrets-application.yaml
+  - honcho-postgres-application.yaml
+  - honcho-secrets-application.yaml
+  - honcho-application.yaml

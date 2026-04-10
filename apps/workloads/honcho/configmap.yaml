@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: honcho-config
+  namespace: honcho
+  labels:
+    app.kubernetes.io/name: honcho
+    app.kubernetes.io/part-of: honcho
+data:
+  LOG_LEVEL: "INFO"
+  NAMESPACE: "honcho"
+  AUTH_USE_AUTH: "false"
+  CACHE_ENABLED: "false"
+  LLM_OPENAI_COMPATIBLE_BASE_URL: "https://openrouter.ai/api/v1"
+  LLM_EMBEDDING_PROVIDER: "openrouter"
+
+  DERIVER_PROVIDER: "custom"
+  DERIVER_MODEL: "google/gemini-2.5-flash"
+  SUMMARY_PROVIDER: "custom"
+  SUMMARY_MODEL: "google/gemini-2.5-flash"
+
+  DIALECTIC_LEVELS__minimal__PROVIDER: "custom"
+  DIALECTIC_LEVELS__minimal__MODEL: "google/gemini-2.5-flash"
+  DIALECTIC_LEVELS__low__PROVIDER: "custom"
+  DIALECTIC_LEVELS__low__MODEL: "google/gemini-2.5-flash"
+  DIALECTIC_LEVELS__medium__PROVIDER: "custom"
+  DIALECTIC_LEVELS__medium__MODEL: "google/gemini-2.5-flash"
+  DIALECTIC_LEVELS__high__PROVIDER: "custom"
+  DIALECTIC_LEVELS__high__MODEL: "google/gemini-2.5-flash"
+  DIALECTIC_LEVELS__max__PROVIDER: "custom"
+  DIALECTIC_LEVELS__max__MODEL: "google/gemini-2.5-flash"
+
+  DREAM_PROVIDER: "custom"
+  DREAM_MODEL: "google/gemini-2.5-flash"
+  DREAM_DEDUCTION_MODEL: "google/gemini-2.5-flash"
+  DREAM_INDUCTION_MODEL: "google/gemini-2.5-flash"

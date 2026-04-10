@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: honcho-api
+  namespace: honcho
+  labels:
+    app.kubernetes.io/name: honcho-api
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: honcho
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: honcho-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: honcho-api
+        app.kubernetes.io/component: api
+        app.kubernetes.io/part-of: honcho
+    spec:
+      initContainers:
+        - name: migrate
+          image: ghcr.io/plastic-labs/honcho:latest
+          command: ["python", "scripts/provision_db.py"]
+          env:
+            - name: DB_CONNECTION_URI
+              valueFrom:
+                secretKeyRef:
+                  name: honcho-db
+                  key: DB_CONNECTION_URI
+      containers:
+        - name: honcho-api
+          image: ghcr.io/plastic-labs/honcho:latest
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: honcho-config
+          env:
+            - name: DB_CONNECTION_URI
+              valueFrom:
+                secretKeyRef:
+                  name: honcho-db
+                  key: DB_CONNECTION_URI
+            - name: LLM_OPENAI_COMPATIBLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: honcho-llm
+                  key: OPENROUTER_HONCHO
+            - name: DERIVER_ENABLED
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
