@@ -605,9 +605,9 @@
   <div class="logo"><div class="logo-dot"></div>honcho explorer</div>
   <span class="topbar-sep">|</span>
   <div class="conn-form">
-    <input type="text" id="baseUrl" placeholder="Base URL" value="http://localhost:8000" />
+    <input type="text" id="baseUrl" placeholder="Base URL" value="" />
     <input type="text" id="apiKey" placeholder="API key (optional)" />
-    <input type="text" id="workspaceId" placeholder="Workspace ID" value="openclaw" />
+    <input type="text" id="workspaceId" placeholder="Workspace ID" value="hermes" />
     <button class="btn" onclick="connect()">Connect</button>
   </div>
   <div class="status-dot" id="statusDot"></div>
@@ -913,9 +913,13 @@ async function api(path, method='GET', body=null) {
 
 /* ─── CONNECT ────────────────────────────────────── */
 async function connect() {
-  state.baseUrl = document.getElementById('baseUrl').value.replace(/\/$/, '');
+  const baseUrlInput = document.getElementById('baseUrl');
+  const workspaceInput = document.getElementById('workspaceId');
+  if (!baseUrlInput.value.trim()) baseUrlInput.value = window.location.origin;
+  if (!workspaceInput.value.trim()) workspaceInput.value = 'hermes';
+  state.baseUrl = baseUrlInput.value.replace(/\/$/, '');
   state.apiKey = document.getElementById('apiKey').value.trim();
-  state.workspaceId = document.getElementById('workspaceId').value.trim();
+  state.workspaceId = workspaceInput.value.trim();
   setStatus('connecting…', '');
   try {
     const ws = await api(`/v3/workspaces/${state.workspaceId}`);
@@ -1482,14 +1486,20 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeModal(); closePanel(); }
 });
 
-// Auto-connect if URL param provided
+// Initialize connection form defaults for in-cluster same-origin use
 const urlParams = new URLSearchParams(window.location.search);
+document.getElementById('baseUrl').value = window.location.origin;
+document.getElementById('workspaceId').value = 'hermes';
+
+// Optional overrides via URL params
 if (urlParams.get('url')) {
   document.getElementById('baseUrl').value = urlParams.get('url');
-  if (urlParams.get('key')) document.getElementById('apiKey').value = urlParams.get('key');
-  if (urlParams.get('workspace')) document.getElementById('workspaceId').value = urlParams.get('workspace');
-  connect();
 }
+if (urlParams.get('key')) document.getElementById('apiKey').value = urlParams.get('key');
+if (urlParams.get('workspace')) document.getElementById('workspaceId').value = urlParams.get('workspace');
+
+// Auto-connect on page load
+connect();
 
 // Trigger data loads when switching views
 function onViewChanged(name) {
