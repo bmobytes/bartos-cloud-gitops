@@ -922,7 +922,7 @@ async function connect() {
   state.workspaceId = workspaceInput.value.trim();
   setStatus('connecting…', '');
   try {
-    const ws = await api(`/v3/workspaces/${state.workspaceId}`);
+    const ws = await api(`/v3/workspaces`, 'POST', { id: state.workspaceId });
     state.connected = true;
     setStatus('connected', 'connected');
     document.getElementById('ws-label').textContent = `workspace: ${ws.id || state.workspaceId}`;
