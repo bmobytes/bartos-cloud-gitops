@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "firecrawl.labels" . | nindent 4 }}
 data:
+  PORT: {{ .Values.playwright.port | quote }}
   MAX_CONCURRENT_PAGES: {{ .Values.playwright.maxConcurrentPages | quote }}
   ALLOW_LOCAL_WEBHOOKS: "true"
   BLOCK_MEDIA: "true"

@@ -29,6 +29,11 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
+                name: firecrawl-config
+            - secretRef:
+                name: {{ include "firecrawl.secretName" . }}
+                optional: true
+            - configMapRef:
                 name: firecrawl-playwright-config
           readinessProbe:
             httpGet:
