@@ -59,6 +59,17 @@ nuqPostgres:
       cpu: 500m
       memory: 1Gi
 
+nuqBootstrap:
+  # PostSync bootstrap job that applies the NUQ schema even if the upstream
+  # docker-entrypoint init hook was skipped on an existing PVC.
+  enabled: true
+  image:
+    repository: postgres
+    tag: "17"
+    pullPolicy: IfNotPresent
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 300
+
 # ---------------------------------------------------------------------------
 # Component toggles and sizing
 # ---------------------------------------------------------------------------

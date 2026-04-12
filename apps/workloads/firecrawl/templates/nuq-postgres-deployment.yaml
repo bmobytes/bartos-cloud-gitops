@@ -26,6 +26,10 @@ spec:
         - name: postgres
           image: "{{ .Values.nuqPostgresImage.repository }}:{{ .Values.nuqPostgresImage.tag }}"
           imagePullPolicy: {{ .Values.nuqPostgresImage.pullPolicy }}
+          command:
+            - /bin/sh
+            - -ec
+            - exec docker-entrypoint.sh postgres -c "cron.database_name=${POSTGRES_DB}"
           ports:
             - name: postgres
               containerPort: 5432

@@ -1,0 +1,67 @@
+{{- if and .Values.nuqPostgres.enabled .Values.nuqBootstrap.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: firecrawl-nuq-bootstrap
+  labels:
+    {{- include "firecrawl.labels" . | nindent 4 }}
+    app.kubernetes.io/name: firecrawl-nuq-bootstrap
+    app.kubernetes.io/component: nuq-bootstrap
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  ttlSecondsAfterFinished: {{ .Values.nuqBootstrap.ttlSecondsAfterFinished }}
+  backoffLimit: {{ .Values.nuqBootstrap.backoffLimit }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: firecrawl-nuq-bootstrap
+        app.kubernetes.io/component: nuq-bootstrap
+        {{- include "firecrawl.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: bootstrap
+          image: "{{ .Values.nuqBootstrap.image.repository }}:{{ .Values.nuqBootstrap.image.tag }}"
+          imagePullPolicy: {{ .Values.nuqBootstrap.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              until pg_isready -h firecrawl-nuq-postgres -p 5432 -U "$POSTGRES_USER" -d "$POSTGRES_DB"; do
+                echo "waiting for firecrawl-nuq-postgres";
+                sleep 5;
+              done
+              psql \
+                -v ON_ERROR_STOP=1 \
+                -h firecrawl-nuq-postgres \
+                -U "$POSTGRES_USER" \
+                -d "$POSTGRES_DB" \
+                -f /bootstrap/nuq-bootstrap.sql
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "firecrawl.pgSecretName" . }}
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "firecrawl.pgSecretName" . }}
+                  key: POSTGRES_USER
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "firecrawl.pgSecretName" . }}
+                  key: POSTGRES_DB
+          volumeMounts:
+            - name: bootstrap-sql
+              mountPath: /bootstrap
+              readOnly: true
+      volumes:
+        - name: bootstrap-sql
+          configMap:
+            name: firecrawl-nuq-bootstrap
+{{- end }}

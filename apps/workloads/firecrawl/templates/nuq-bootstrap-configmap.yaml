@@ -1,0 +1,15 @@
+{{- if and .Values.nuqPostgres.enabled .Values.nuqBootstrap.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: firecrawl-nuq-bootstrap
+  labels:
+    {{- include "firecrawl.labels" . | nindent 4 }}
+    app.kubernetes.io/name: firecrawl-nuq-bootstrap
+    app.kubernetes.io/component: nuq-bootstrap
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+data:
+  nuq-bootstrap.sql: |
+{{ .Files.Get "files/nuq-bootstrap.sql" | indent 4 }}
+{{- end }}

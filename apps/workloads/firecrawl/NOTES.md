@@ -45,6 +45,13 @@ kubectl -n firecrawl create secret generic firecrawl-db \
   --from-literal=NUQ_DATABASE_URL_LISTEN='postgresql://firecrawl:<password>@firecrawl-nuq-postgres:5432/firecrawl_nuq'
 ```
 
+## NUQ bootstrap behavior
+
+- The upstream `ghcr.io/firecrawl/nuq-postgres` image ships `/docker-entrypoint-initdb.d/010-nuq.sql`, but that only runs on the very first `initdb` for an empty `PGDATA` directory.
+- This chart starts Postgres with `cron.database_name=${POSTGRES_DB}` so `pg_cron` can be created in the same database that Firecrawl uses.
+- This chart also installs a PostSync Job named `firecrawl-nuq-bootstrap` that waits for Postgres readiness and then applies an idempotent copy of the NUQ bootstrap SQL.
+- The Job is safe to rerun on later Argo CD syncs and repairs clusters where the PVC already contained a database but not the NUQ schema after a partial/failed first init.
+
 ## Internal Services (ClusterIP only)
 
 | Service | Port |
