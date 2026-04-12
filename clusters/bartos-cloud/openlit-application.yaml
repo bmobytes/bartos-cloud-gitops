@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openlit
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openlit
+  sources:
+    - repoURL: https://openlit.github.io/helm/
+      chart: openlit
+      targetRevision: 1.17.2
+      helm:
+        valueFiles:
+          - $values/apps/monitoring/openlit/values.yaml
+    - repoURL: git@github.com:bmobytes/bartos-cloud-gitops.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

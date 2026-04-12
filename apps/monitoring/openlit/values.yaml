@@ -1,0 +1,29 @@
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: lab-ca
+  hosts:
+    - host: openlit.lab.bartos.media
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: openlit-tls
+      hosts:
+        - openlit.lab.bartos.media
+
+persistence:
+  enabled: true
+  storageClassName: longhorn
+
+config:
+  usageMetrics: false
+
+clickhouse:
+  enabled: true
+  persistence:
+    storageClassName: longhorn

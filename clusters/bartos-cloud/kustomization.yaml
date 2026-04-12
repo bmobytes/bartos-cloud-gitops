@@ -13,3 +13,4 @@ resources:
   - honcho-application.yaml
   - honcho-ui-application.yaml
   - firecrawl-application.yaml
+  - openlit-application.yaml
