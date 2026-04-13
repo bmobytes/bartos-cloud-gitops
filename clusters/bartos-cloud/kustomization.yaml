@@ -14,3 +14,5 @@ resources:
   - honcho-ui-application.yaml
   - firecrawl-application.yaml
   - openlit-application.yaml
+  - open-webui-secrets-application.yaml
+  - open-webui-application.yaml

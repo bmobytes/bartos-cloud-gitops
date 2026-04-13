@@ -1,0 +1,26 @@
+replicaCount: 1
+
+ingress:
+  enabled: true
+  class: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: lab-ca
+  host: open-webui.lab.bartos.media
+  tls: true
+  existingSecret: open-webui-tls
+
+persistence:
+  enabled: true
+  storageClass: longhorn
+  size: 10Gi
+
+ollama:
+  enabled: false
+
+pipelines:
+  enabled: false
+
+openaiBaseApiUrl: https://openrouter.ai/api/v1
+
+openaiApiKeyExistingSecret: open-webui-llm
+openaiApiKeyExistingSecretKey: OPENROUTER_HONCHO
