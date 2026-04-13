@@ -3,15 +3,18 @@ kind: Kustomization
 resources:
   - cert-manager-application.yaml
   - cert-manager-issuers-application.yaml
-  - external-dns-application.yaml
   - hermes-rbac-application.yaml
   - netdata-application.yaml
   - infisical-operator-application.yaml
   - infisical-secrets-application.yaml
+  - external-dns-secrets-application.yaml
+  - external-dns-application.yaml
+  - honcho-db-secrets-application.yaml
   - honcho-postgres-application.yaml
   - honcho-secrets-application.yaml
   - honcho-application.yaml
   - honcho-ui-application.yaml
+  - firecrawl-secrets-application.yaml
   - firecrawl-application.yaml
   - openlit-application.yaml
   - open-webui-secrets-application.yaml

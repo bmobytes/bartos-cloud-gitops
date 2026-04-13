@@ -1,5 +1,5 @@
 ## Firecrawl — local deployment values for bartos-cloud
-## Secrets are NOT stored here. See NOTES.md for required manual secrets.
+## Secrets are NOT stored here. Managed by Infisical operator — see apps/secrets/firecrawl/.
 
 # ---------------------------------------------------------------------------
 # Images
@@ -30,22 +30,17 @@ nuqPostgresImage:
   pullPolicy: IfNotPresent
 
 # ---------------------------------------------------------------------------
-# Existing secrets (must be created out-of-band — see NOTES.md)
+# Existing secrets (managed by Infisical operator — see apps/secrets/firecrawl/)
 # ---------------------------------------------------------------------------
 existingSecret:
-  # Kubernetes Secret holding API keys and tokens
+  # Kubernetes Secret holding API keys and tokens (synced from Infisical /firecrawl)
   name: firecrawl-secrets
-  # Expected keys: OPENAI_API_KEY, BULL_AUTH_KEY, TEST_API_KEY,
-  #                REDIS_PASSWORD (if redis auth enabled),
-  #                any other sensitive env vars
 
 nuqPostgres:
   enabled: true
   existingSecret:
-    # Kubernetes Secret holding NUQ Postgres credentials
+    # Kubernetes Secret holding NUQ Postgres credentials (synced from Infisical /firecrawl/db)
     name: firecrawl-db
-    # Expected keys: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB,
-    #                NUQ_DATABASE_URL, NUQ_DATABASE_URL_LISTEN
   replicaCount: 1
   persistence:
     enabled: true

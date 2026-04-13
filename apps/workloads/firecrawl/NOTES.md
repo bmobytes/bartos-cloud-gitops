@@ -5,11 +5,16 @@
 - **API**: https://firecrawl.lab.bartos.media
 - **Namespace**: `firecrawl`
 
-## Required Secrets (create before first sync)
+## Secrets (managed by Infisical Operator)
+
+Both secrets below are synced automatically by the Infisical operator via
+`InfisicalSecret` resources in `apps/secrets/firecrawl/`. No manual
+`kubectl create secret` steps are required.
 
 ### `firecrawl-secrets` (namespace: firecrawl)
 
 Application-level credentials. All keys are optional depending on features used.
+Synced from Infisical path `/firecrawl`.
 
 | Key | Purpose |
 |-----|---------|
@@ -17,16 +22,10 @@ Application-level credentials. All keys are optional depending on features used.
 | `TEST_API_KEY` | API key used for authenticating requests |
 | `OPENAI_API_KEY` | OpenAI key for LLM-based extraction |
 
-```bash
-kubectl -n firecrawl create secret generic firecrawl-secrets \
-  --from-literal=BULL_AUTH_KEY='<value>' \
-  --from-literal=TEST_API_KEY='<value>' \
-  --from-literal=OPENAI_API_KEY='<value>'
-```
-
 ### `firecrawl-db` (namespace: firecrawl)
 
 NUQ Postgres credentials. Required when `nuqPostgres.enabled=true` (default).
+Synced from Infisical path `/firecrawl/db`.
 
 | Key | Purpose |
 |-----|---------|
@@ -35,15 +34,6 @@ NUQ Postgres credentials. Required when `nuqPostgres.enabled=true` (default).
 | `POSTGRES_DB` | Database name |
 | `NUQ_DATABASE_URL` | Full connection URI, e.g. `postgresql://user:pass@firecrawl-nuq-postgres:5432/dbname` |
 | `NUQ_DATABASE_URL_LISTEN` | Same URI — used for LISTEN/NOTIFY channel |
-
-```bash
-kubectl -n firecrawl create secret generic firecrawl-db \
-  --from-literal=POSTGRES_USER='firecrawl' \
-  --from-literal=POSTGRES_PASSWORD='<generate>' \
-  --from-literal=POSTGRES_DB='firecrawl_nuq' \
-  --from-literal=NUQ_DATABASE_URL='postgresql://firecrawl:<password>@firecrawl-nuq-postgres:5432/firecrawl_nuq' \
-  --from-literal=NUQ_DATABASE_URL_LISTEN='postgresql://firecrawl:<password>@firecrawl-nuq-postgres:5432/firecrawl_nuq'
-```
 
 ## NUQ bootstrap behavior
 
