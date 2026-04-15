@@ -84,8 +84,8 @@ This repo manages:
 ### Platform notes
 Current platform apps now represented in GitOps:
 - Cilium
-- MetalLB
 - MetalLB config (`homelab-pool`, `homelab-l2`)
+- MetalLB controller chart scaffold (activation deferred to avoid duplicate `controller`/`speaker` resources)
 - Longhorn
 - ingress-nginx
 
@@ -307,8 +307,11 @@ kubectl get secret -A
 - `bartos-cloud`
 - `cert-manager`
 - `cert-manager-issuers`
+- `cilium`
 - `external-dns`
 - `external-dns-secrets`
+- `firecrawl`
+- `firecrawl-secrets`
 - `hermes-rbac`
 - `honcho`
 - `honcho-db-secrets`
@@ -317,19 +320,18 @@ kubectl get secret -A
 - `honcho-ui`
 - `infisical-operator`
 - `infisical-secrets`
+- `ingress-nginx`
+- `metallb-config`
 - `netdata`
 - `open-webui`
 - `open-webui-secrets`
 - `openlit`
-- `firecrawl-secrets`
 
-### Known degraded app
-- `firecrawl` — `Synced`, `Progressing`
+### Known degraded apps
+- `longhorn` — `OutOfSync`, `Healthy` (legacy CRD drift still being adopted)
 
-Known symptom:
-- Firecrawl worker is crashing because RabbitMQ intermittently refuses connections.
-
-Before doing unrelated work, be aware that Firecrawl is already in a degraded state.
+Firecrawl note:
+- `firecrawl` is currently `Synced`, `Healthy`, but the worker and RabbitMQ pods have a high restart history. Keep an eye on them during unrelated work.
 
 ---
 

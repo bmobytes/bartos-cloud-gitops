@@ -110,8 +110,8 @@ Repo layout:
 
 Platform components now represented in GitOps:
 - `Cilium`
-- `MetalLB`
 - `MetalLB` config (`homelab-pool`, `homelab-l2`)
+- `MetalLB` controller chart scaffold (activation deferred to avoid duplicate `controller`/`speaker` resources)
 - `ingress-nginx`
 - `Longhorn`
 
@@ -141,6 +141,7 @@ Current live Argo apps:
 - `bartos-cloud`
 - `cert-manager`
 - `cert-manager-issuers`
+- `cilium`
 - `external-dns`
 - `external-dns-secrets`
 - `firecrawl`
@@ -153,6 +154,9 @@ Current live Argo apps:
 - `honcho-ui`
 - `infisical-operator`
 - `infisical-secrets`
+- `ingress-nginx`
+- `longhorn`
+- `metallb-config`
 - `netdata`
 - `open-webui`
 - `open-webui-secrets`
@@ -418,14 +422,11 @@ Components:
 Host:
 - `firecrawl.lab.bartos.media`
 
-### Firecrawl current warning
-As of validation on 2026-04-14:
-- Argo app `firecrawl` = `Synced`, `Progressing`
-- worker pod = `CrashLoopBackOff`
-- worker logs show RabbitMQ connection failure: `ECONNREFUSED ... :5672`
-- RabbitMQ pod is running but has very high restart count and repeated probe timeouts
-
-Treat Firecrawl as degraded until repaired.
+### Firecrawl current note
+As of validation on 2026-04-15:
+- Argo app `firecrawl` = `Synced`, `Healthy`
+- API, worker, Playwright, Redis, RabbitMQ, and NUQ Postgres pods are all `Running`
+- worker and RabbitMQ have a high restart history, so keep watching them during adjacent changes
 
 ### Netdata
 Pattern:
@@ -577,8 +578,11 @@ Current verified symptom:
 - `bartos-cloud`
 - `cert-manager`
 - `cert-manager-issuers`
+- `cilium`
 - `external-dns`
 - `external-dns-secrets`
+- `firecrawl`
+- `firecrawl-secrets`
 - `hermes-rbac`
 - `honcho`
 - `honcho-db-secrets`
@@ -587,14 +591,15 @@ Current verified symptom:
 - `honcho-ui`
 - `infisical-operator`
 - `infisical-secrets`
+- `ingress-nginx`
+- `metallb-config`
 - `netdata`
 - `open-webui`
 - `open-webui-secrets`
 - `openlit`
-- `firecrawl-secrets`
 
 ### Not fully healthy
-- `firecrawl` — `Synced`, `Progressing`
+- `longhorn` — `OutOfSync`, `Healthy` (legacy CRD drift still being adopted)
 
 ---
 

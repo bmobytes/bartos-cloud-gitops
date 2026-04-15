@@ -13,8 +13,8 @@ GitOps repo for the `bartos-cloud` Kubernetes cluster.
 
 ### Platform infrastructure
 - `cilium` — CNI plugin, VXLAN tunnel mode (Helm)
-- `metallb` — bare-metal LoadBalancer controller (Helm)
-- `metallb-config` — IPAddressPool and L2Advertisement (plain YAML)
+- `metallb-config` — IPAddressPool and L2Advertisement for the existing MetalLB install (plain YAML)
+- `metallb` — controller chart scaffold in repo; activation deferred until legacy plain-manifest install is migrated without duplicate controller/speaker resources
 - `longhorn` — distributed block storage / default StorageClass (Helm)
 - `ingress-nginx` — ingress controller pinned to `192.168.141.230` (Helm)
 
