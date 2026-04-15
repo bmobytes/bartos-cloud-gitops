@@ -26,3 +26,14 @@ spec:
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+  ignoreDifferences:
+    - kind: Secret
+      name: cilium-ca
+      namespace: kube-system
+      jsonPointers:
+        - /data
+    - kind: Secret
+      name: hubble-server-certs
+      namespace: kube-system
+      jsonPointers:
+        - /data
