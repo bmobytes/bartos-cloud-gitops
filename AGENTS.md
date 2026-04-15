@@ -75,20 +75,20 @@ If a live change is meant to persist, mirror it back into Git immediately.
 This repo manages:
 - Argo app-of-apps structure
 - workload manifests
-- some infrastructure apps
+- infrastructure apps
+- platform apps for Cilium, MetalLB, ingress-nginx, and Longhorn
 - Helm values for selected apps
 - Infisical secret claims
 - Hermes RBAC
 
-### Platform components (managed here as of 2026-04-14)
-These core platform components are now managed via Argo CD Helm apps in this repo:
-- Cilium (CNI) — `apps/infrastructure/cilium/`
-- MetalLB (LoadBalancer) — `apps/infrastructure/metallb/` + `metallb-config/`
-- ingress-nginx — `apps/infrastructure/ingress-nginx/`
-- Longhorn (storage) — `apps/infrastructure/longhorn/`
+### Platform notes
+Current platform apps now represented in GitOps:
+- Cilium
+- MetalLB
+- MetalLB config (`homelab-pool`, `homelab-l2`)
+- Longhorn
+- ingress-nginx
 
-Changes to these components should be coordinated carefully — they are critical
-platform infrastructure.
 
 ---
 

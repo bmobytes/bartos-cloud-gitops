@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - cilium-application.yaml
   - metallb-application.yaml
+  - metallb-config-application.yaml
   - longhorn-application.yaml
   - ingress-nginx-application.yaml
   - cert-manager-application.yaml

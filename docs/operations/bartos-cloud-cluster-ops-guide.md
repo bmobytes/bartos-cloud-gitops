@@ -108,14 +108,12 @@ Repo layout:
 - `apps/secrets/`
 - `templates/`
 
-### Platform components (managed in this repo)
-These core platform components are now managed via Argo CD Helm apps:
-- `Cilium` — `apps/infrastructure/cilium/`
-- `MetalLB` — `apps/infrastructure/metallb/` (controller) + `metallb-config/` (IP pool + L2)
-- `ingress-nginx` — `apps/infrastructure/ingress-nginx/`
-- `Longhorn` — `apps/infrastructure/longhorn/`
-
-Changes to these components should be coordinated carefully.
+Platform components now represented in GitOps:
+- `Cilium`
+- `MetalLB`
+- `MetalLB` config (`homelab-pool`, `homelab-l2`)
+- `ingress-nginx`
+- `Longhorn`
 
 ---
 

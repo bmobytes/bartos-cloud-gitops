@@ -4,7 +4,7 @@ metadata:
   name: homelab-pool
   namespace: metallb-system
 spec:
+  autoAssign: true
+  avoidBuggyIPs: false
   addresses:
-    # Conservative single-address pool matching the known live ingress IP.
-    # Widen this range if additional LoadBalancer IPs are needed.
-    - 192.168.141.230/32
+    - 192.168.141.230-192.168.141.254

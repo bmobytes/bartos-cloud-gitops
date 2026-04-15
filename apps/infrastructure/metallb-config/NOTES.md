@@ -21,11 +21,13 @@ custom resources are applied.
 
 ## Address pool
 
-Current pool: `192.168.141.230/32` (single address).
-
-This is a conservative single-address pool based on the verified live ingress IP.
-The actual live pool may be wider. Widen the range in `ipaddresspool.yaml` if
-additional LoadBalancer IPs are needed.
+Verified live pool configuration:
+- pool name: `homelab-pool`
+- addresses: `192.168.141.230-192.168.141.254`
+- autoAssign: `true`
+- avoidBuggyIPs: `false`
+- L2Advertisement name: `homelab-l2`
+- interface: `ens33`
 
 ## Secrets
 
