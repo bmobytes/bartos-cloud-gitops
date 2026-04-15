@@ -1,0 +1,13 @@
+controller:
+  publishService:
+    enabled: false
+
+  extraArgs:
+    publish-status-address: "192.168.141.230"
+
+  service:
+    type: LoadBalancer
+    loadBalancerIP: "192.168.141.230"
+
+  config:
+    use-forwarded-headers: "true"

@@ -1,0 +1,10 @@
+defaultSettings:
+  defaultDataLocality: disabled
+
+persistence:
+  defaultClass: true
+  defaultClassReplicaCount: 3
+  defaultFsType: ext4
+
+storageClass:
+  allowVolumeExpansion: true

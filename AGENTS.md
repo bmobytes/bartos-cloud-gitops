@@ -15,7 +15,7 @@ Default goals:
 - make Argo CD converge cleanly
 - keep secrets out of Git
 - verify live cluster health after changes
-- avoid changing platform components that are not owned by this repo
+- coordinate carefully when changing platform components (Cilium, MetalLB, ingress-nginx, Longhorn)
 
 ---
 
@@ -80,14 +80,15 @@ This repo manages:
 - Infisical secret claims
 - Hermes RBAC
 
-### Not currently managed here
-Do **not** assume ownership of these unless you explicitly add them to GitOps:
-- Cilium
-- Longhorn
-- MetalLB
-- ingress-nginx
+### Platform components (managed here as of 2026-04-14)
+These core platform components are now managed via Argo CD Helm apps in this repo:
+- Cilium (CNI) — `apps/infrastructure/cilium/`
+- MetalLB (LoadBalancer) — `apps/infrastructure/metallb/` + `metallb-config/`
+- ingress-nginx — `apps/infrastructure/ingress-nginx/`
+- Longhorn (storage) — `apps/infrastructure/longhorn/`
 
-These exist in the cluster but were not found in this repo during validation.
+Changes to these components should be coordinated carefully — they are critical
+platform infrastructure.
 
 ---
 
@@ -372,6 +373,6 @@ kubectl -n firecrawl logs deploy/firecrawl-rabbitmq --tail=200
 - validate before and after every change
 - keep secrets out of Git
 - pull latest remote state before editing
-- do not assume ownership of platform components outside this repo
+- coordinate carefully when changing platform infrastructure (Cilium, MetalLB, ingress-nginx, Longhorn)
 - document durable changes
 - treat Firecrawl as a known degraded workload until repaired

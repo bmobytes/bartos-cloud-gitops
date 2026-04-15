@@ -92,7 +92,7 @@ Use a true admin kubeconfig for tasks involving:
 - node reconfiguration
 - control-plane reconfiguration
 - cluster bootstrap beyond Hermes RBAC
-- replacing core platform components such as Cilium, Longhorn, ingress-nginx, or MetalLB
+- major version upgrades to core platform components (Cilium, Longhorn, ingress-nginx, MetalLB)
 
 ---
 
@@ -108,14 +108,14 @@ Repo layout:
 - `apps/secrets/`
 - `templates/`
 
-### Not currently found in this repo
-These components are live in cluster but were not found in the GitOps repo during validation:
-- `Cilium`
-- `MetalLB`
-- `ingress-nginx`
-- `Longhorn`
+### Platform components (managed in this repo)
+These core platform components are now managed via Argo CD Helm apps:
+- `Cilium` — `apps/infrastructure/cilium/`
+- `MetalLB` — `apps/infrastructure/metallb/` (controller) + `metallb-config/` (IP pool + L2)
+- `ingress-nginx` — `apps/infrastructure/ingress-nginx/`
+- `Longhorn` — `apps/infrastructure/longhorn/`
 
-Treat those as external platform prerequisites unless explicitly migrated into GitOps later.
+Changes to these components should be coordinated carefully.
 
 ---
 
@@ -342,7 +342,13 @@ Examples:
 
 ## 10. Live app inventory
 
-### Infrastructure
+### Platform infrastructure (managed in GitOps)
+- Cilium (CNI)
+- MetalLB (LoadBalancer)
+- ingress-nginx (ingress controller)
+- Longhorn (storage)
+
+### Supporting infrastructure
 - Argo CD
 - cert-manager
 - cert-manager issuers (`lab-ca`)
@@ -621,7 +627,7 @@ git -C /mnt/rackshack/wish/workspace/bartos-cloud-gitops log --oneline --decorat
 - Argo CD is the deploy/reconcile engine.
 - Never store plaintext secrets in Git.
 - Store `InfisicalSecret` claims in Git instead.
-- Assume Cilium, Longhorn, MetalLB, and ingress-nginx are outside this repo unless proven otherwise.
+- Cilium, Longhorn, MetalLB, and ingress-nginx are now managed in this repo — coordinate changes carefully.
 - Pull latest remote state before editing anything.
 - Treat Firecrawl as the primary currently degraded workload.
 - Any durable live fix should be written back into GitOps and docs.

@@ -1,0 +1,3 @@
+# MetalLB controller chart values.
+# IP pool and L2 advertisement config are managed separately
+# in apps/infrastructure/metallb-config/.

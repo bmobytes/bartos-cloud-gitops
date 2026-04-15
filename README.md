@@ -11,6 +11,14 @@ GitOps repo for the `bartos-cloud` Kubernetes cluster.
 
 ## Current apps
 
+### Platform infrastructure
+- `cilium` — CNI plugin, VXLAN tunnel mode (Helm)
+- `metallb` — bare-metal LoadBalancer controller (Helm)
+- `metallb-config` — IPAddressPool and L2Advertisement (plain YAML)
+- `longhorn` — distributed block storage / default StorageClass (Helm)
+- `ingress-nginx` — ingress controller pinned to `192.168.141.230` (Helm)
+
+### Supporting infrastructure
 - `cert-manager` — TLS certificate controller (Helm)
 - `cert-manager-issuers` — internal CA bootstrap (`lab-ca` ClusterIssuer)
 - `external-dns`
@@ -61,6 +69,29 @@ helm repo update
 helm template netdata netdata/netdata \
   --version 3.7.163 \
   -f apps/monitoring/netdata/values.yaml
+
+# Platform infrastructure Helm charts
+helm repo add cilium https://helm.cilium.io/
+helm repo add metallb https://metallb.github.io/metallb
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo add longhorn https://charts.longhorn.io
+helm repo update
+
+helm template cilium cilium/cilium \
+  --version 1.19.1 --namespace kube-system \
+  -f apps/infrastructure/cilium/values.yaml
+
+helm template metallb metallb/metallb \
+  --version 0.14.5 --namespace metallb-system \
+  -f apps/infrastructure/metallb/values.yaml
+
+helm template ingress-nginx ingress-nginx/ingress-nginx \
+  --version 4.10.1 --namespace ingress-nginx \
+  -f apps/infrastructure/ingress-nginx/values.yaml
+
+helm template longhorn longhorn/longhorn \
+  --version 1.6.2 --namespace longhorn-system \
+  -f apps/infrastructure/longhorn/values.yaml
 ```
 
 ## Conventions

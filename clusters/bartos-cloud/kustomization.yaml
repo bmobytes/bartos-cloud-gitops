@@ -1,6 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - cilium-application.yaml
+  - metallb-application.yaml
+  - longhorn-application.yaml
+  - ingress-nginx-application.yaml
   - cert-manager-application.yaml
   - cert-manager-issuers-application.yaml
   - hermes-rbac-application.yaml
