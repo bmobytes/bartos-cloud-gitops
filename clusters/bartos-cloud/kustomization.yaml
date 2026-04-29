@@ -23,3 +23,5 @@ resources:
   - openlit-application.yaml
   - open-webui-secrets-application.yaml
   - open-webui-application.yaml
+  - unifi-daily-briefing-secrets-application.yaml
+  - unifi-daily-briefing-application.yaml

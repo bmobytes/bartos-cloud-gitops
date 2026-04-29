@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: unifi-daily-briefing
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/bmobytes/bartos-cloud-gitops.git
+    targetRevision: main
+    path: apps/workloads/unifi-daily-briefing
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: unifi-daily-briefing
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
