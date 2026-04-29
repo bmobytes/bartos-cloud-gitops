@@ -14,9 +14,9 @@ This app follows the plain YAML + Kustomize pattern used in `bartos-cloud-gitops
 
 Current manifests expect:
 
-- `ghcr.io/bmobytes/unifi-daily-briefing:sha-1cb592b`
+- `ghcr.io/bmobytes/unifi-daily-briefing:sha-83701a5`
 
-That image was published from GitHub Actions run `25115427509` and resolved to digest `sha256:335f2ff4a5d1726883c41b37f9998eb3ad9019b2eff8476d5714cc12cfc43c5b`.
+That image was published from GitHub Actions run `25124225046` and resolved to digest `sha256:188a561f681aaf7d7f5ef0f63054455d0a6c568a821c82ed9e0fab4431353d56`.
 
 ## Required secret keys
 

@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: ghcr.io/bmobytes/unifi-daily-briefing:sha-d457e0a
+          image: ghcr.io/bmobytes/unifi-daily-briefing:sha-83701a5
           imagePullPolicy: IfNotPresent
           command: ["unifi-daily-briefing"]
           args: ["serve", "--host", "0.0.0.0", "--port", "8000"]
