@@ -25,7 +25,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: reporter
-              image: ghcr.io/bmobytes/unifi-daily-briefing:sha-1cb592b
+              image: ghcr.io/bmobytes/unifi-daily-briefing:sha-d457e0a
               imagePullPolicy: IfNotPresent
               command: ["unifi-daily-briefing"]
               args: ["report"]
